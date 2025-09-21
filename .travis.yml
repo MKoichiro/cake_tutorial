@@ -1,62 +1,52 @@
 language: php
 
-# We require precise here, as 5.3 doesn't exist on trusty.
-dist: precise
+os: linux
+dist: xenial
 
 php:
-  - 5.3
-  - 5.4
-  - 5.5
   - 5.6
-  - 7.0
-  - 7.1
-  - 7.2
   - 7.3
+  - 7.4
 
 env:
-  matrix:
+  jobs:
     - DB=mysql
   global:
-    - PHPUNIT=3.7.33
+    - PHPUNIT=5.7.19
 
 services:
   - memcached
+  - redis
+  - postgresql
+  - mysql
 
-matrix:
+jobs:
   fast_finish: true
   include:
     - php: 5.3
-      env: DB=mysql PHPUNIT=4.8.35
+      env: DB=mysql PHPUNIT=3.7.33
+      dist: precise
 
-    - php: 5.4
+    - php: 5.6
+      env: DB=pgsql PHPUNIT=3.7.33
+
+    - php: 7.0
+      env: DB=sqlite PHPUNIT=3.7.33
+
+    - php: 7.1
+      env: DB=sqlite
+
+    - php: 7.2
       env: DB=pgsql
 
-    - php: 5.4
+    - php: 7.3
       env: DB=sqlite
 
     - php: 7.0
       env: PHPCS=1
 
-    - php: 7.1
-      env: DB=mysql PHPUNIT=5.7.19
-
-    - php: 7.2
-      env: DB=mysql PHPUNIT=5.7.19
-
-    - php: 7.3
-      env: DB=mysql PHPUNIT=5.7.19
-  allow_failures:
-    - php: 7.3
-      env: DB=mysql PHPUNIT=5.7.19
-  exclude:
-    - php: 7.2
-      env: DB=mysql
-    - php: 7.3
-      env: DB=mysql
-
-
 before_script:
-  - if [[ ${TRAVIS_PHP_VERSION:0:3} =~ ^7\.[23]$ ]] ; then pear config-set preferred_state snapshot && yes "" | pecl install mcrypt ; fi
+  - if [[ ${TRAVIS_PHP_VERSION:0:3} =~ ^7\.[234]$ ]] ; then pear config-set preferred_state snapshot && yes "" | pecl install mcrypt ; fi
   - composer require "phpunit/phpunit=$PHPUNIT"
   - echo "require_once 'vendors/autoload.php';" >> app/Config/bootstrap.php
   - sudo locale-gen de_DE
@@ -71,10 +61,7 @@ before_script:
   - if [[ ${TRAVIS_PHP_VERSION:0:3} == "5.3" ]] ; then pecl install timezonedb ; fi
   - sh -c "if [ '$PHPCS' = '1' ]; then composer require 'cakephp/cakephp-codesniffer:1.*'; fi"
   - sh -c "if [ '$PHPCS' = '1' ]; then vendors/bin/phpcs --config-set installed_paths vendors/cakephp/cakephp-codesniffer; fi"
-  - |
-      if [[ ${TRAVIS_PHP_VERSION} != "7.3" ]]; then
-        echo "extension = memcached.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini;
-      fi
+  - echo "extension = memcached.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - if [[ ${TRAVIS_PHP_VERSION:0:1} == "7" ]] ; then echo "yes" | pecl install apcu-5.1.3 || true; fi
   - if [[ ${TRAVIS_PHP_VERSION:0:1} == "5" ]] ; then echo "yes" | pecl install apcu-4.0.11 || true; fi
   - echo -e "extension = apcu.so\napc.enable_cli=1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
@@ -161,7 +148,7 @@ before_script:
     }" > app/Config/database.php
 
 script:
-  - sh -c "if [ '$PHPCS' != '1' ]; then ./lib/Cake/Console/cake test core AllTests --stderr; fi"
+  - sh -c "if [ '$PHPCS' != '1' ]; then ./lib/Cake/Console/cake test core AllTests --stderr --verbose; fi"
   - sh -c "if [ '$PHPCS' = '1' ]; then vendors/bin/phpcs -p --extensions=php --standard=CakePHP ./lib/Cake; fi;"
 
 notifications:
