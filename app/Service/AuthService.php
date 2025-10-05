@@ -1,14 +1,10 @@
 <?php
 class AuthService {
 
-  private static $loginUser = null;
+  private static $lastError = null;
 
-  public static function setLoginUser($user) {
-    self::$loginUser = $user;
-  }
-
-  public static function getLoginUser() {
-    return self::$loginUser;
+  public static function lastError() {
+    return self::$lastError;
   }
 
   public function authenticate($user) {
@@ -19,14 +15,20 @@ class AuthService {
     $dbUser = $userModel->selectUserByEmail($email)['users'];
     $hasher = new BlowfishPasswordHasher();
 
-    if ($dbUser && $hasher->check($password, $dbUser['password_hash'])) {
+    if (is_null($dbUser)) {
+      // ユーザが存在しない
+      self::$lastError = 'User not found';
+      return false;
+    }
+
+    if ($hasher->check($password, $dbUser['password_hash'])) {
       // 認証成功
-      unset($dbUser['password_hash']);
-      // return $dbUser;
       self::setLoginUser($dbUser);
       return true;
+    } else {
+      // パスワード不一致
+      self::$lastError = 'Invalid password';
+      return false;
     }
-    // 認証失敗
-    return false;
   }
 }
