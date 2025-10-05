@@ -1,36 +1,41 @@
 <?php
+App::uses('AppModel', 'Model');
 
 class User extends AppModel {
-  public $validate = [
-    'username' => [
-      'required' => [
-        'rule' => 'notBlank',
-        'message' => 'A username is required',
-      ],
-    ],
-    'password' => [
-      'required' => [
-        'rule' => 'notBlank',
-        'message' => 'A password is required',
-      ],
-    ],
-    'role' => [
-      'valid' => [
-        'rule' => [
-          ['inList', ['admin', 'author']],
-          'message' => 'Please enter a valid role',
-          'allowEmpty' => false
-        ],
-      ],
-    ],
-  ];
-  public function beforeSave($options = []) {
-    if (isset($this->data[$this->alias]['password'])) {
-      $passwordHasher = new BlowfishPasswordHasher();
-      $this->data[$this->alias]['password'] = $passwordHasher->hash(
-        $this->data[$this->alias]['password']
-      );
+  public function insertUser($sql, $params) {
+    $result = $this->query($sql, $params);
+    $this->log('SQL RESULT: ' . '$result = ' . print_r($result, true), 'info');
+
+    // 成功時は falsy な [] が返る場合があるので、厳密に false と比較する
+    if ($result === false) {
+      return false;
     }
     return true;
+  }
+
+  public function selectUserByEmail($email) {
+    $sql = "SELECT * FROM users WHERE email = :email LIMIT 1";
+    $params = ['email' => $email];
+    $result = $this->query($sql, $params);
+    $this->log('SQL RESULT: ' . '$result = ' . print_r($result, true), 'info');
+
+    if ($result === false || count($result) === 0) {
+      return null;
+    }
+
+    return $result[0];
+  }
+
+  public function selectUserById($id) {
+    $sql = "SELECT * FROM users WHERE uid = :uid LIMIT 1";
+    $params = ['id' => $id];
+    $result = $this->query($sql, $params);
+    $this->log('SQL RESULT: ' . '$result = ' . print_r($result, true), 'info');
+
+    if ($result === false || count($result) === 0) {
+      return null;
+    }
+
+    return $result[0];
   }
 }

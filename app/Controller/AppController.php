@@ -20,6 +20,8 @@
  */
 
 App::uses('Controller', 'Controller');
+App::uses('BlowfishPasswordHasher', 'Controller/Component/Auth');
+App::uses('User', 'Model');
 
 /**
  * Application Controller
@@ -31,27 +33,31 @@ App::uses('Controller', 'Controller');
  * @link		https://book.cakephp.org/2.0/en/controllers.html#the-app-controller
  */
 class AppController extends Controller {
-  public $components = [
-    'Flash',
-    'Auth' => [
-      'loginRedirect' => [
-        'controller' => 'posts',
-        'action' => 'index',
-      ],
-      'logoutRedirect' => [
-        'controller' => 'pages',
-        'action' => 'display',
-        'home',
-      ],
-      'authenticate' => [
-        'Form' => [
-          'passwordHasher' => 'Blowfish',
-        ],
-      ],
-    ],
-  ];
 
-  public function beforeFilter() {
-    $this->Auth->allow('index', 'view');
+  public function login($user) {
+    $email = $user['email'];
+    $password = $user['password'];
+    $hasher = new BlowfishPasswordHasher();
+    $userModel = new User();
+    $dbUser = $userModel->selectUserByEmail($email)['users'];
+    if ($dbUser && $hasher->check($password, $dbUser['password_hash'])) {
+      // 認証成功
+      $this->Session->renew();
+      // パスワードハッシュはセッションに保存しない
+      unset($dbUser['password_hash']);
+      // セッションを開始
+      $this->Session->write('Auth.User', $dbUser);
+      return true;
+    }
+    // 認証失敗
+    return false;
+  }
+
+  public function logout() {
+    $this->Session->destroy();
+  }
+
+  public function getLoginUser() {
+    return $this->Session->read('Auth.User');
   }
 }
