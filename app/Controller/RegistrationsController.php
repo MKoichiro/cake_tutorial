@@ -55,9 +55,9 @@ class RegistrationsController extends AppController {
     $this->register($userInput);
 
     // 登録後、自動ログイン
-    $this->login($userInput);
+    $this->MyAuth->login($userInput);
 
-    $this->set('loginUser', $this->getLoginUser());
+    $this->set('loginUser', $this->MyAuth->getLoginUser());
     $this->Flash->success(__('登録に成功しました。'));
     return $this->render('complete');
   }
