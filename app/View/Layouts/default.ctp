@@ -29,6 +29,7 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 		echo $this->Html->meta('icon');
 
 		echo $this->Html->css('cake.generic');
+		echo $this->Html->css('custom');
 
 		echo $this->fetch('meta');
 		echo $this->fetch('css');
@@ -40,6 +41,7 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
 		<div id="header">
 			<h1><?php echo $this->Html->link($cakeDescription, 'https://cakephp.org'); ?></h1>
 		</div>
+		<?= $this->element('Header/header'); ?>
 		<div id="content">
 
 			<?php echo $this->Flash->render(); ?>

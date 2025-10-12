@@ -1,0 +1,1 @@
+SELECT * FROM threads INNER JOIN users ON threads.user_id = users.user_id ORDER BY threads.created_datetime DESC;

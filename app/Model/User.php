@@ -1,54 +1,60 @@
 <?php
 App::uses('AppModel', 'Model');
+App::uses('DatabaseUtil', 'Lib/Utility');
 
-class DuplicateEmailException extends Exception {}
+class UserModelException extends Exception {}
 
 class User extends AppModel {
   public function insertUser($params) {
-    $sql = require '../Config/sql.php';
-    $this->log('SQL: ' . $sql, 'info');
-    $this->log('PARAMS: ' . print_r($params, true), 'info');
-    // INSERT文の実行
+    $sql = DatabaseUtil::sqlReader('insert_user.sql');
     try {
       $result = $this->query($sql, $params);
-      $this->log('SQL RESULT: ' . '$result = ' . print_r($result, true), 'info');
-
-      // 成功時は falsy な [] が返る場合があるので、厳密に false と比較する
-      return $result === false ? false : true;
-    } catch (PDOException $e) {
-      // email重複（既存ユーザー）はDBに近いのでModel側で例外を検出しておく
-      $errorInfo = $e->errorInfo;
-      $sqlState = $errorInfo[0];
-      $driverErrorCode = $errorInfo[1];
-      $driverErrorMessage = $errorInfo[2];
-      CakeLog::debug('PDOException in UserService::register(), $e->errorInfo: ' . print_r($errorInfo, true));
-
-      // 判定条件
-      $emailDuplication = (
-        $sqlState === '23000' && $driverErrorCode === 1062          // UNIQUE制約違反（MySQL）
-        && strpos($driverErrorMessage, 'uk_users_email') !== false  // emailカラムのUNIQUE制約違反
-      );
-      CakeLog::debug('$emailDuplication: ' . ($emailDuplication ? 'true' : 'false'));
-
-      if ($emailDuplication) {
-        throw new DuplicateEmailException();
-      }
-
-      // email 重複以外の PDOException は上位にスロー
+    } catch (Exception $e) {
       throw $e;
     }
+
+    // insertUser() 内部の Model::query() は、失敗するほとんどの場合、上流で例外をスローするのだが、
+    // ドキュメントに失敗時には false を返すと明記がある以上念のためハンドリングする必要がある
+    if ($result === false) {
+      throw new UserModelException();
+    }
+    // 成功時は falsy な [] が返る場合がある。
+    if (is_array($result) && count($result) === 0) {
+      $result = true;
+    }
+    return $result;
   }
 
-  public function selectUserByEmail($email) {
-    $sql = "SELECT * FROM users WHERE email = :email LIMIT 1";
-    $params = ['email' => $email];
-    $result = $this->query($sql, $params);
-    $this->log('SQL RESULT: ' . '$result = ' . print_r($result, true), 'info');
-
-    if ($result === false || count($result) === 0) {
-      return null;
+  public function selectUserByEmail($params) {
+    $sql = DatabaseUtil::sqlReader('select_user_by_email.sql');
+    try {
+      $result = $this->query($sql, $params);
+    } catch (Exception $e) {
+      throw $e;
     }
 
-    return $result[0];
+    if (count($result) === 0) {
+      return [];
+    } else if ($result === false) {
+      throw new UserModelException();
+    }
+    return $result[0]['users'];
+  }
+
+  public function countUsersByEmail($params) {
+    $sql = DatabaseUtil::sqlReader('count_users_by_email.sql');
+    try {
+      $result = $this->query($sql, $params);
+    } catch (Exception $e) {
+      throw $e;
+    }
+
+    CakeLog::write('debug', 'UserModel#countUsersByEmail: ' . print_r($result, true));
+
+    if ($result === false) {
+      throw new UserModelException();
+    }
+
+    return (int)$result[0][0]['count'];
   }
 }

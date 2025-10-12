@@ -1,50 +1,62 @@
 <?php
 
-App::uses('BlowfishPasswordHasher', 'Controller/Component/Auth');
-App::uses('User', 'Model');
+App::uses('User',         'Model');
+App::uses('BaseService',  'Service');
+App::uses('StringUtil',   'Lib/Utility');
+App::uses('DatabaseUtil', 'Lib/Utility');
 
-class UserService {
-  private static $lastError = null;
+class UserService extends BaseService {
 
-  public static function lastError() {
-    return self::$lastError;
+  private $userModel;
+  public function __construct() {
+    parent::__construct();
+    $this->userModel = new User();
   }
 
-  public function register($formInput) {
-    $passwordHasher = new BlowfishPasswordHasher();
+  public function register($userInfo) {
+    // 引数ガード
+    if (!is_array($userInfo) || is_null($userInfo) || !isset($userInfo['display_name']) || !isset($userInfo['email']) || !isset($userInfo['password'])) {
+      $this->setLastError('unexpected');
+      return false;
+    }
+
+    // パラメータ発行
     $params = [
-      'uid' => CakeText::uuid(),
-      'display_name' => $formInput['display_name'],
-      'email' => $formInput['email'],
-      'password_hash' => $passwordHasher->hash($formInput['password']),
+      'uid'           => StringUtil::createUuid(),
+      'display_name'  => $userInfo['display_name'],
+      'email'         => mb_strtolower($userInfo['email']),
+      'password_hash' => DatabaseUtil::hashPassword($userInfo['password']),
     ];
 
-    $userModel = new User();
-
+    // DB: 登録実行
     try {
-      $result = $userModel->insertUser($params);
-      // insertUser() 内部の Model::query() は、失敗するほとんどの場合、上流で例外をスローするのだが、
-      // ドキュメントに失敗時には false を返すと明記がある以上念のためハンドリングする必要がある
-      if ($result === false) {
-        self::$lastError = [
-          'code' => 'db_error',
-          'message' => 'DB実行に失敗しました。'
-        ];
-      }
-      return $result;
-    } catch (DuplicateEmailException $e) {
-      self::$lastError = [
-        'code' => 'duplicate_email',
-        'message' => 'そのメールアドレスは既に登録されています。'
-      ];
-      return false;
+      $result = $this->userModel->insertUser($params);
+      $this->setLastResult($result);
+      return true;
     } catch (Exception $e) {
-      CakeLog::error('DB ERROR in UserService::register(): ' . $e->getMessage());
-      self::$lastError = [
-        'code' => 'db_exception',
-        'message' => 'サーバーでエラーが発生しました。'
-      ];
+      $this->setLastError('server', null, $e);
       return false;
+    }
+  }
+
+  public function isEmailExists($email) {
+    // 引数ガード
+    if (is_null($email) || !is_string($email) || trim($email) === '') {
+      $this->setLastError('unexpected');
+      return null;
+    }
+
+    // パラメータ発行
+    $params = ['email' => mb_strtolower($email)];
+
+    // DB: メールアドレス存在チェック
+    try {
+      $count = $this->userModel->countUsersByEmail($params);
+      $this->setLastResult($count);
+      return $count > 0;
+    } catch (Exception $e) {
+      $this->setLastError('server', null, $e);
+      return null;
     }
   }
 }

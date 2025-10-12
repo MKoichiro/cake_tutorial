@@ -31,4 +31,15 @@ App::uses('Controller', 'Controller');
  * @link		https://book.cakephp.org/2.0/en/controllers.html#the-app-controller
  */
 class AppController extends Controller {
+  public $components = [
+    'Session',
+    'Flash',
+    'Authenticate'
+  ];
+
+  protected $routes = [
+    'GET:/users/register' => ['[method]' => 'GET', 'controller' => 'users', 'action' => 'register'],
+    'POST:/users/confirm' => ['[method]' => 'POST', 'controller' => 'users', 'action' => 'confirm'],
+    'POST:/users/complete' => ['[method]' => 'POST', 'controller' => 'users', 'action' => 'complete'],
+  ];
 }

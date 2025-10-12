@@ -1,98 +1,90 @@
 <?php
 App::uses('AppController', 'Controller');
+include('../Lib/Validation/Validator.php');
+include('../Service/UserService.php');
 
 class UsersController extends AppController {
-  // public function beforeFilter() {
-  //   parent::beforeFilter();
-  //   $this->Auth->allow('add', 'logout');
-  // }
 
-  // public function login() {
-  //   if ($this->request->is('post')) {
-  //     if ($this->Auth->login()) {
-  //       $this->redirect($this->Auth->redirectUrl());
-  //     } else {
-  //       $this->Flash->error(__('Invalid username or password, try again'));
-  //     }
-  //   }
-  // }
+  public $components = ['Authenticate'];
 
-  // public function logout() {
-  //   $this->redirect($this->Auth->logout());
-  // }
+  private $userService;
+  private $validator;
 
-  public function index() {
-    $this->User->recursive = 0;
-    $this->set('users', $this->paginate());
+  public function __construct($request = null, $response = null) {
+    parent::__construct($request, $response);
+    $this->userService = new UserService();
+    $this->validator   = new Validator();
   }
 
-  public function view($id = null) {
-    $this->User->id = $id;
-    if (!$this->User->exists()) {
-      throw new NotFoundException(__('Invalid user'));
-    }
-    $this->set('user', $this->User->findById($id));
-  }
-
-  // public function add() {
-  //   if ($this->request->is('post')) {
-  //     $this->User->create();
-  //     if ($this->User->save($this->request->data)) {
-  //       $this->Flash->success(__('The user has been saved'));
-  //       return $this->redirect(['action' => 'index']);
-  //     }
-  //     $this->Flash->error(__('The user could not be saved. Please try again.'));
-  //   }
-  // }
-    // フォーム表示（GET）
-  public function displayRegister() {
-    // ビューに渡す初期値があればセット
-    // $this->request->data = array('User' => array(...));
-    $this->render('register'); // app/View/Users/register.ctp を使う例
-  }
-
-  // 作成（POST）
   public function register() {
-    $this->request->allowMethod('post'); // CakePHP2 では onlyAllow を使う
-    $this->User->create();
-    if ($this->User->save($this->request->data)) {
-      $this->Flash->success(__('The user has been saved'));
-      return $this->redirect(array('action' => 'index'));
-    }
-    $this->Flash->error(__('The user could not be saved. Please try again.'));
-    // バリデーションエラー時は同じフォームを再表示
+    $this->request->allowMethod('get');
+
+    $this->set([
+      'exceptSecrets'    => $this->Session->read('exceptSecrets'),
+      'validationErrors' => $this->Session->read('validationErrors')
+    ]);
+
+    // 再読み込みでクリア
+    $this->Session->delete('exceptSecrets');
+    $this->Session->delete('validationErrors');
+
     $this->render('register');
   }
 
-  public function edit($id = null) {
-    $this->User->id = $id;
-    if (!$this->User->exists()) {
-      throw new NotFoundException(__('Invalid user'));
+  public function confirm() {
+    $this->request->allowMethod('post');
+    $userInput = $exceptSecrets = $this->request->data['User'];
+    unset($exceptSecrets['password'], $exceptSecrets['password_confirmation']);
+    $this->Session->write('exceptSecrets', $exceptSecrets);
+
+    // バリデーション１: 入力値チェック
+    if (!$this->validator->execute($userInput, 'registerUser')) {
+      $this->Session->write('validationErrors', $this->validator->getErrorMessages());
+      return $this->redirect(['action' => 'register']);
     }
-    if ($this->request->is(['post', 'put'])) {
-      if ($this->User->save($this->request->data)) {
-        $this->Flash->success(__('The user has been saved'));
-        return $this->redirect(['action' => 'index']);
-      }
-      $this->Flash->error(__('The user could not be saved. Please, try again.'));
-    } else {
-      $this->request->data = $this->User->findById($id);
-      unset($this->request->data['User']['password']);
+    // バリデーション２: メールアドレス重複チェック
+    if ($this->userService->isEmailExists($userInput['email'])) {
+      $this->Session->write('validationErrors', ['email' => 'このメールアドレスは既に登録されています。']);
+      return $this->redirect(['action' => 'register']);
     }
+
+    $this->set([
+      'exceptSecrets' => $exceptSecrets,
+      'secrets'       => ['password' => $userInput['password']],
+    ]);
+    return $this->render('confirm');
   }
 
-  public function delete($id = null) {
+  public function complete() {
     $this->request->allowMethod('post');
+    $exceptSecrets = $this->Session->read('exceptSecrets');
+    $secrets = $this->request->data['User'];
 
-    $this->User->id = $id;
-    if (!$this->User->exists()) {
-      throw new NotFoundException();
+    // パスワードの再バリデーション
+    if (!$this->validator->execute($secrets, 'registerUser.password')) {
+      $this->Session->write('validationErrors', $this->validator->getErrorMessages());
+      return $this->redirect(['action' => 'register']);
     }
-    if ($this->User->delete()) {
-      $this->Flash->success(__('User deleted'));
-      return $this->redirect(['action' => 'index']);
+
+    // 登録処理
+    $userInfo = array_merge($exceptSecrets, $secrets);
+    if (!$this->userService->register($userInfo)) {
+      $this->Flash->error($this->userService->getLastError('message'));
+      return $this->redirect(['action' => 'register']);
     }
-    $this->Flash->error(__('User was not deleted'));
-    return $this->redirect(['action' => 'index']);
+    $this->Session->delete('exceptSecrets');
+    $this->Session->delete('validationErrors');
+
+    $credentials = [
+      'email'    => $userInfo['email'],
+      'password' => $userInfo['password']
+    ];
+
+    // 登録後、自動ログイン
+    $this->Authenticate->login($credentials);
+
+    $this->set('loginUser', $this->Authenticate->getLoginUser());
+    $this->Flash->success(__('登録に成功しました。'));
+    return $this->render('complete');
   }
 }

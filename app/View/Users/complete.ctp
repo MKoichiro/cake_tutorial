@@ -1,7 +1,11 @@
-<pre>
-  <?php isset($loginUser) && var_dump($loginUser); ?>
-  <?php var_dump($_SESSION); ?>
-</pre>
+<?=
+  $this->element('Debug/debug', [
+    'arrays' => [
+      '$loginUser' => $loginUser,
+    ],
+  ]);
+?>
+
 <p><?= $loginUser['display_name'] ?>さん、ようこそ掲示板アプリへ！</p>
 
 <p>何からはじめますか？</p>

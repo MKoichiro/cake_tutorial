@@ -1,0 +1,49 @@
+@charset "UTF-8";
+
+/* Debug Area */
+.debug-area {
+  background-color: pink;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 0.5rem;
+}
+
+.debug-area h2 {
+  background-color: transparent;
+  color: darkred;
+}
+
+.debug-area h3 {
+  color: darkred;
+}
+
+.debug-area h4 {
+  color: darkred;
+  margin-top: 1rem;
+}
+
+.debug-area>ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+.debug-area>ul>li {
+  margin-bottom: 1rem;
+  border-bottom: 1px dashed darkred;
+  padding-bottom: 1rem;
+}
+
+.debug-area>ul>li:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.debug-area pre {
+  background-color: white;
+  padding: 5px;
+  border: 1px solid darkred;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}

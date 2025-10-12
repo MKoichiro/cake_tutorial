@@ -31,17 +31,38 @@
 // UUIDの正規表現（ハイフン区切り、大小許容）
 $UUIDRegExp = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
 
+// ユーザー登録
 Router::connect(
-	'/registrations',
-	['[method]' => 'GET', 'controller' => 'registrations', 'action' => 'displayForm']
+	'/users/register',
+	['[method]' => 'GET', 'controller' => 'users', 'action' => 'register']
 );
 Router::connect(
-	'/registrations/confirm',
-	['[method]' => 'POST', 'controller' => 'registrations', 'action' => 'displayConfirm']
+	'/users/confirm',
+	['[method]' => 'POST', 'controller' => 'users', 'action' => 'confirm']
 );
 Router::connect(
-	'/registrations/complete',
-	['[method]' => 'POST', 'controller' => 'registrations', 'action' => 'displayComplete']
+	'/users/complete',
+	['[method]' => 'POST', 'controller' => 'users', 'action' => 'complete']
+);
+
+// ログイン・ログアウト
+Router::connect(
+	'/login',
+	['[method]' => 'GET', 'controller' => 'authentications', 'action' => 'displayForm']
+);
+Router::connect(
+	'/login',
+	['[method]' => 'POST', 'controller' => 'authentications', 'action' => 'login']
+);
+Router::connect(
+	'/logout',
+	['[method]' => 'DELETE', 'controller' => 'authentications', 'action' => 'logout']
+);
+
+// ホーム
+Router::connect(
+	'/home',
+	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'home']
 );
 
 /**

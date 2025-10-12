@@ -49,6 +49,7 @@ Cache::config('default', array('engine' => 'File'));
  *     'Plugin'                    => array('/path/to/plugins/', '/next/path/to/plugins/'),
  * ));
  */
+App::build(['Service' => [APP . 'Service' . DS]]);
 
 /**
  * Custom Inflector rules can be set to correctly pluralize or singularize table, model, controller names or whatever other
@@ -109,3 +110,6 @@ CakeLog::config('error', array(
 	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
 	'file' => 'error',
 ));
+
+// 独自設定
+Configure::write('App.sqlDir', APP . 'Config' . DS . 'Sql' . DS);
