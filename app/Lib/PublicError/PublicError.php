@@ -54,4 +54,24 @@ class PublicError {
   public function getMessage() { return $this->message; }
   public function getException(){ return $this->exception; }
   public function getCode()    { return $this->code; }
+  public function getData($attr = null) {
+    switch ($attr) {
+      case 'type':
+        return $this->getType();
+      case 'message':
+        return $this->getMessage();
+      case 'exception':
+        return $this->getException();
+      case 'code':
+        return $this->getCode();
+      case null:
+      default:
+        return [
+          'type'      => $this->getType(),
+          'message'   => $this->getMessage(),
+          'exception' => $this->getException(),
+          'code'      => $this->getCode(),
+        ];
+    }
+  }
 }

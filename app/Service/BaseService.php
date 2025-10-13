@@ -26,16 +26,7 @@ class BaseService {
     if ($this->lastError === null) {
       return null;
     }
-    switch ($attr) {
-      case 'type':
-        return $this->lastError->getType();
-      case 'message':
-        return $this->lastError->getMessage();
-      case 'code':
-        return $this->lastError->getCode();
-      default:
-        return $this->lastError;
-    }
+    return $this->lastError->getData($attr);
   }
 
   protected function setLastResult($result) {

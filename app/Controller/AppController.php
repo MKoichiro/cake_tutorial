@@ -34,12 +34,26 @@ class AppController extends Controller {
   public $components = [
     'Session',
     'Flash',
-    'Authenticate'
+    'Authenticate',
+    'Authorize',
   ];
 
-  protected $routes = [
-    'GET:/users/register' => ['[method]' => 'GET', 'controller' => 'users', 'action' => 'register'],
-    'POST:/users/confirm' => ['[method]' => 'POST', 'controller' => 'users', 'action' => 'confirm'],
-    'POST:/users/complete' => ['[method]' => 'POST', 'controller' => 'users', 'action' => 'complete'],
+  public static $appWhiteList = [
+    'public' => [
+      'users'           => ['register', 'confirm', 'complete'],
+      'threads'         => ['home'],
+      'authentications' => [],
+    ],
+    'loginUser' => [
+      'users'           => [],
+      'threads'         => ['home', 'new', 'create'],
+      'authentications' => [],
+    ],
   ];
+
+  public function beforeFilter() {
+    parent::beforeFilter();
+    CakeLog::write('debug', 'allow() called from AppController');
+    $this->Authorize->allow();
+  }
 }

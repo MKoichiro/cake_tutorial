@@ -14,11 +14,11 @@ class AuthenticateComponent extends Component {
     $this->authService = new AuthenticateService();
   }
 
-  private function setLoginError(PublicError|null $error) {
-    $this->loginError = $error;
+  private function setLoginError($type = 'auth', $message = null, $exception = null, $code = null) {
+    $this->loginError = new PublicError($type, $message, $exception, $code);
   }
-  public function getLoginError() {
-    return $this->loginError;
+  public function getLoginError($attr = null) {
+    return $this->loginError->getData($attr);
   }
 
   public function login($credentials) {
@@ -49,4 +49,6 @@ class AuthenticateComponent extends Component {
     $this->Session->destroy();
     return true;
   }
+
+
 }

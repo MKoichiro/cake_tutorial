@@ -1,0 +1,1 @@
+INSERT INTO threads (uid, title, description, created_by, updated_by) VALUES (:uid, :title, :description, :created_by, :updated_by);

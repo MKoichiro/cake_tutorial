@@ -3,6 +3,8 @@
 App::uses('AppModel', 'Model');
 App::uses('DatabaseUtil', 'Lib/Utility');
 
+class ThreadModelException extends Exception {}
+
 class Thread extends AppModel {
   public function selectAll() {
     $sql = DatabaseUtil::sqlReader('select_threads_orderby_created.sql');
@@ -14,9 +16,45 @@ class Thread extends AppModel {
     }
 
     if ($result === false) {
-      throw new Exception('ThreadModel#selectAll failed');
+      throw new ThreadModelException();
     }
 
     return $result;
+  }
+
+  public function selectByThreadId($params) {
+    $sql = DatabaseUtil::sqlReader('select_thread_by_thread_id.sql');
+
+    try {
+      $result = $this->query($sql, $params);
+    } catch (Exception $e) {
+      throw $e;
+    }
+
+    if ($result === false) {
+      throw new ThreadModelException();
+    }
+
+    if (empty($result)) {
+      throw new NotFoundException();
+    }
+
+    return $result[0]['threads'];
+  }
+
+  public function insertThread($params) {
+    $sql = DatabaseUtil::sqlReader('insert_thread.sql');
+
+    try {
+      $result = $this->query($sql, $params);
+    } catch (Exception $e) {
+      throw $e;
+    }
+
+    if ($result === false) {
+      throw new ThreadModelException();
+    }
+
+    return true;
   }
 }

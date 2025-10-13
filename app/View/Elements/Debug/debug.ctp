@@ -12,8 +12,8 @@
             </li>
           <?php endforeach; ?>
           <li>
-            <h4>$_SESSION</h4>
-            <pre><?php print_r($_SESSION); ?></pre>
+            <h4>$this->Session->read()</h4>
+            <pre><?php print_r($this->Session->read()); ?></pre>
           </li>
         </ul>
       <?php else: ?>

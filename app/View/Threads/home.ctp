@@ -8,6 +8,8 @@
 
 <h1>スレッド一覧</h1>
 
+<a href="<?= $this->Html->url(['action' => 'new']); ?>">新規スレッド作成</a>
+
 <?php if (empty($threads)): ?>
   <p>スレッドが見つかりません。</p>
 <?php else: ?>

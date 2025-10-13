@@ -59,10 +59,18 @@ Router::connect(
 	['[method]' => 'DELETE', 'controller' => 'authentications', 'action' => 'logout']
 );
 
-// ホーム
+// スレッド
 Router::connect(
 	'/home',
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'home']
+);
+Router::connect(
+	'/threads/new',
+	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'new']
+);
+Router::connect(
+	'/threads/create',
+	['[method]' => 'POST', 'controller' => 'threads', 'action' => 'create']
 );
 
 /**
