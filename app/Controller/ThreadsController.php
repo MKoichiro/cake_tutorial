@@ -8,12 +8,12 @@ class ThreadsController extends AppController {
   public $components = ['Authorize', 'Authenticate', 'Flash'];
 
   private $threadService;
-  private $commentService;
+  // private $commentService;
   private $validator;
   public function __construct($request = null, $response = null) {
     parent::__construct($request, $response);
     $this->threadService = new ThreadService();
-    $this->commentService = new CommentService();
+    // $this->commentService = new CommentService();
     $this->validator     = new Validator();
   }
 
