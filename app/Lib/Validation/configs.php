@@ -31,4 +31,19 @@ return $configs = [
       ['message' => 'メールアドレスの形式が不正です。', 'checker' => Checker::notMatch($regExps['email'])],
     ],
   ],
+  'createThread' => [
+    'title' => [
+      ['message' => '1文字以上です。',                  'checker' => Checker::notBlank()],
+      ['message' => '最大100文字です。',                 'checker' => Checker::max(100)],
+    ],
+    'description' => [
+      ['message' => '最大5000文字です。',                'checker' => Checker::max(5000)],
+    ],
+  ],
+  'createComment' => [
+    'body' => [
+      ['message' => '1文字以上です。',                  'checker' => Checker::notBlank()],
+      ['message' => '最大5000文字です。',                'checker' => Checker::max(5000)],
+    ],
+  ],
 ];

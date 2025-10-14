@@ -73,8 +73,8 @@ class AuthorizeComponent extends Component {
     if (is_null($whiteList)) {
       $appWhiteList = $controller::$appWhiteList;
       $whiteList = !is_null($appWhiteList)
-      ? $this->extractControllerWhiteList($appWhiteList, $controllerName)
-      : [];
+        ? $this->extractControllerWhiteList($appWhiteList, $controllerName)
+        : [];
 
       if ($whiteList === false) {
         return;

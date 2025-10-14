@@ -72,6 +72,11 @@ Router::connect(
 	'/threads/create',
 	['[method]' => 'POST', 'controller' => 'threads', 'action' => 'create']
 );
+Router::connect(
+	'/threads/show/:uid',
+	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'show'],
+	['pass' => ['uid'], 'uid' => $UUIDRegExp]
+);
 
 /**
  * Users（RESTful）

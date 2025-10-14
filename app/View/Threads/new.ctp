@@ -18,18 +18,18 @@
         <label for="ThreadTitle">Title</label>
         <input
           name="data[Thread][title]"
-          maxlength="30"
+          maxlength="100"
           type="text"
           id="ThreadTitle"
           value="<?= isset($threadData['title']) ? $threadData['title'] : ''; ?>"
           required="required"
-          >
+        >
         <?php if (isset($validationErrors['title'])): ?>
           <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['title']]); ?>
         <?php endif; ?>
       </div>
 
-      <div class="input textarea required">
+      <div class="input textarea">
         <label for="ThreadDescription">Description</label>
         <textarea
           name="data[Thread][description]"

@@ -1,1 +1,0 @@
-SELECT * FROM threads WHERE id = :thread_id;

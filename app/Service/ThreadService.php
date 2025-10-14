@@ -22,18 +22,19 @@ class ThreadService extends BaseService {
     }
   }
 
-  public function fetchByThreadId($threadId) {
+  public function fetchThreadByUID($threadUID) {
     // 引数ガード
-    if (empty($threadId)) {
-      $this->setLastError('invalidArgument', 'スレッドIDが無効です。');
+    if (!is_string($threadUID)) {
+      $this->setLastError('unexpected');
       return false;
     }
 
     // params 発行
-    $params = ['thread_id' => $threadId];
+    $params = ['uid' => $threadUID];
+
     // DB
     try {
-      $result = $this->threadModel->selectByThreadId($params);
+      $result = $this->threadModel->selectThreadByUID($params);
       $this->setLastResult($result);
       return true;
     } catch (NotFoundException $e) {
@@ -45,33 +46,41 @@ class ThreadService extends BaseService {
     }
   }
 
-  public function create($threadData, $author) {
+  public function create($threadData, $authorData) {
     // 引数ガード
-    if (empty($threadData) || !isset($threadData['title']) || !isset($threadData['body'])) {
+    if (!is_array($threadData) || !is_array($authorData)) {
       $this->setLastError('unexpected');
       return false;
     }
-    if (empty($author) || !isset($author['created_by']) || !isset($author['updated_by'])) {
+    if (!isset($threadData['title']) || !array_key_exists('description', $threadData)) {
+      $this->setLastError('unexpected');
+      return false;
+    }
+    if (!isset($authorData['user_id']) || !isset($authorData['uid'])) {
       $this->setLastError('unexpected');
       return false;
     }
 
     // params 発行
+    $authorUID = $authorData['uid'];
+    $threadDescription = trim($threadData['description']);
     $params = [
-      'uid' => StringUtil::createUuid(),
-      'title' => $threadData['title'],
-      'description' => $threadData['description'],
+      'uid'         => StringUtil::createUuid(),
+      'user_id'     => $authorData['user_id'],
+      'title'       => $threadData['title'],
+      'description' => $threadDescription === '' ? null : $threadDescription,
+      'created_by'  => $authorUID,
+      'updated_by'  => $authorUID,
     ];
-    $params = array_merge($params, $author);
 
     // DB
     try {
       $this->threadModel->insertThread($params);
-      $this->setLastResult($params);
+      $this->setLastResult($params['uid']);
+      return true;
     } catch (Exception $e) {
       $this->setLastError('server', null, $e);
       return false;
     }
   }
-
 }

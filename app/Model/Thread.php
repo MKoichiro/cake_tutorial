@@ -22,8 +22,8 @@ class Thread extends AppModel {
     return $result;
   }
 
-  public function selectByThreadId($params) {
-    $sql = DatabaseUtil::sqlReader('select_thread_by_thread_id.sql');
+  public function selectThreadByUID($params) {
+    $sql = DatabaseUtil::sqlReader('select_thread_by_thread_uid.sql');
 
     try {
       $result = $this->query($sql, $params);
@@ -34,12 +34,11 @@ class Thread extends AppModel {
     if ($result === false) {
       throw new ThreadModelException();
     }
-
-    if (empty($result)) {
+    if ($result === []) {
       throw new NotFoundException();
     }
 
-    return $result[0]['threads'];
+    return $result[0];
   }
 
   public function insertThread($params) {
