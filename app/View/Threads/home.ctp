@@ -8,7 +8,7 @@
 
 <h1>スレッド一覧</h1>
 
-<a href="<?= $this->Html->url(['action' => 'new']); ?>">新規スレッド作成</a>
+<a href="<?= $this->Html->url(['action' => 'createThread']); ?>">新規スレッド作成</a>
 
 <?php if (empty($threads)): ?>
   <p>スレッドが見つかりません。</p>
@@ -16,7 +16,11 @@
   <ul>
     <?php foreach ($threads as $thread): ?>
       <li>
-        <a href="#">
+        <a href="<?= $this->Html->url([
+          'controller' => 'threads',
+          'action'     => 'show',
+          $thread['threads']['uid'],
+          ]); ?>">
           <div>
             <h2>
               <?= h($thread['threads']['title']); ?>

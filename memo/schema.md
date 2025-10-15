@@ -93,3 +93,29 @@ VALUES
   'cbfc8cc8-088a-444f-8d50-221c3adae603'
 );
 ```
+
+```SQL
+CREATE TABLE `comments` (
+  `comment_id`         INT UNSIGNED  AUTO_INCREMENT,
+  `uid`               CHAR(36)      NOT NULL,
+
+  `user_id`           INT UNSIGNED,
+  `thread_id`         INT UNSIGNED,
+  `body`              VARCHAR(5000) NOT NULL,
+
+  `created_by`        VARCHAR(36)   NOT NULL,
+  `created_datetime`  DATETIME      DEFAULT NOW(),
+  `updated_by`        VARCHAR(36)   NOT NULL,
+  `updated_datetime`  DATETIME      DEFAULT NOW(),
+
+  PRIMARY KEY(comment_id),
+  CONSTRAINT fk_comments_user_id
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_comments_thread_id
+    FOREIGN KEY (`thread_id`) REFERENCES `threads` (`thread_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+```

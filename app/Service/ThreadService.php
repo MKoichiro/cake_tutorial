@@ -66,7 +66,7 @@ class ThreadService extends BaseService {
     $threadDescription = trim($threadData['description']);
     $params = [
       'uid'         => StringUtil::createUuid(),
-      'user_id'     => $authorData['user_id'],
+      'user_id'     => (int)$authorData['user_id'],
       'title'       => $threadData['title'],
       'description' => $threadDescription === '' ? null : $threadDescription,
       'created_by'  => $authorUID,

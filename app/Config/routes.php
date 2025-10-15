@@ -65,8 +65,8 @@ Router::connect(
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'home']
 );
 Router::connect(
-	'/threads/new',
-	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'new']
+	'/threads/createThread',
+	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'createThread']
 );
 Router::connect(
 	'/threads/create',
@@ -76,6 +76,13 @@ Router::connect(
 	'/threads/show/:uid',
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'show'],
 	['pass' => ['uid'], 'uid' => $UUIDRegExp]
+);
+
+// コメント
+Router::connect(
+	'/threads/:thread_uid/createComment',
+	['[method]' => 'POST', 'controller' => 'comments', 'action' => 'createComment'],
+	['pass' => ['thread_uid'], 'thread_uid' => $UUIDRegExp]
 );
 
 /**

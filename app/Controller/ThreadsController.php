@@ -2,18 +2,19 @@
 
 App::uses('AppController', 'Controller');
 App::uses('ThreadService', 'Service');
+App::uses('CommentService', 'Service');
 App::uses('Validator', 'Lib/Validation');
 
 class ThreadsController extends AppController {
   public $components = ['Authorize', 'Authenticate', 'Flash'];
 
   private $threadService;
-  // private $commentService;
+  private $commentService;
   private $validator;
   public function __construct($request = null, $response = null) {
     parent::__construct($request, $response);
     $this->threadService = new ThreadService();
-    // $this->commentService = new CommentService();
+    $this->commentService = new CommentService();
     $this->validator     = new Validator();
   }
 
@@ -36,10 +37,10 @@ class ThreadsController extends AppController {
     return $this->render('home');
   }
 
-  public function new() {
+  public function createThread() {
     $this->request->allowMethod('get');
     // スレッド作成画面表示
-    return $this->render('new');
+    return $this->render('createThread');
   }
 
   public function create() {
@@ -60,7 +61,7 @@ class ThreadsController extends AppController {
         'commentData'      => $commentData,
         'validationErrors' => $validationErrors,
       ]);
-      return $this->render('new');
+      return $this->render('createThread');
     }
 
     // エンティティ登録
@@ -77,7 +78,7 @@ class ThreadsController extends AppController {
         'threadData'       => $threadData,
         'commentData'      => $commentData,
       ]);
-      return $this->render('new');
+      return $this->render('createThread');
     }
     $threadUID = $this->threadService->getLastResult();
 
@@ -88,7 +89,7 @@ class ThreadsController extends AppController {
         'threadData'       => $threadData,
         'commentData'      => $commentData,
       ]);
-      return $this->render('new');
+      return $this->render('createThread');
     }
 
     $this->Flash->success('スレッドを作成しました。');
@@ -101,15 +102,24 @@ class ThreadsController extends AppController {
 
   public function show($uid = null) {
     $this->request->allowMethod('get');
-    $threadUID = $uid;
-    // スレッド詳細表示
+    $threadUID = $this->request->param('uid');
+
+    // スレッド取得
     if (!$this->threadService->fetchThreadByUID($threadUID)) {
       $this->Flash->error($this->threadService->getLastError('message'));
     }
-    $result = $this->threadService->getLastResult();
+    $threadWithAuthorData = $this->threadService->getLastResult();
+    $threadData = $threadWithAuthorData['threads'];
+
+    // コメント取得
+    if (!$this->commentService->fetchWithUserByThreadID($threadData['thread_id'])) {
+      $this->Flash->error($this->commentService->getLastError('message'));
+    }
+    $commentsWithAuthorsData = $this->commentService->getLastResult();
+
     $this->set([
-      'threadData' => $result['threads'],
-      'authorData' => $result['users'],
+      'threadWithAuthorData'    => $threadWithAuthorData,
+      'commentsWithAuthorsData' => $commentsWithAuthorsData,
     ]);
     return $this->render('show');
   }
