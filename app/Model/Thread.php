@@ -1,59 +1,36 @@
 <?php
 
-App::uses('AppModel', 'Model');
-App::uses('DatabaseUtil', 'Lib/Utility');
+App::uses('BaseModel', 'Model');
 
-class ThreadModelException extends Exception {}
-
-class Thread extends AppModel {
-  public function selectAll() {
-    $sql = DatabaseUtil::sqlReader('select_threads_orderby_created.sql');
-
-    try {
-      $result = $this->query($sql);
-    } catch (Exception $e) {
-      throw $e;
+class Thread extends BaseModel {
+    public function insert($params) {
+        return $this->executeSql([
+            'queryType' => 'insertOne',
+            'queryKey'  => 'thread',
+            'params'    => $params,
+        ]);
     }
 
-    if ($result === false) {
-      throw new ThreadModelException();
+    public function selectAll() {
+        return $this->executeSql([
+            'queryType' => 'selectMany',
+            'queryKey'  => 'threads_withUsers',
+        ]);
     }
 
-    return $result;
-  }
-
-  public function selectThreadByUID($params) {
-    $sql = DatabaseUtil::sqlReader('select_thread_by_thread_uid.sql');
-
-    try {
-      $result = $this->query($sql, $params);
-    } catch (Exception $e) {
-      throw $e;
+    public function selectByUid($params) {
+        return $this->executeSql([
+            'queryType' => 'selectOne',
+            'queryKey'  => 'thread_withUser_byUid',
+            'params'    => $params,
+        ]);
     }
 
-    if ($result === false) {
-      throw new ThreadModelException();
+    public function selectByUserUid($params) {
+        return $this->executeSql([
+            'queryType' => 'selectMany',
+            'queryKey'  => 'threads_byUserUid',
+            'params'    => $params,
+        ]);
     }
-    if ($result === []) {
-      throw new NotFoundException();
-    }
-
-    return $result[0];
-  }
-
-  public function insertThread($params) {
-    $sql = DatabaseUtil::sqlReader('insert_thread.sql');
-
-    try {
-      $result = $this->query($sql, $params);
-    } catch (Exception $e) {
-      throw $e;
-    }
-
-    if ($result === false) {
-      throw new ThreadModelException();
-    }
-
-    return true;
-  }
 }

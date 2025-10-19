@@ -112,4 +112,4 @@ CakeLog::config('error', array(
 ));
 
 // 独自設定
-Configure::write('App.sqlDir', APP . 'Config' . DS . 'Sql' . DS);
+// Configure::write('App.sqlDir', APP . 'Config' . DS . 'SQL');

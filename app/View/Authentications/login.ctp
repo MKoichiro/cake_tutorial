@@ -1,11 +1,11 @@
-<?= $this->element('Debug/debug', [
+<?= $this->element('debug', [
   'arrays' => [
-    '$exceptSecrets' => $exceptSecrets,
-    '$validationErrors' => $validationErrors,
+    '$exceptSecrets'    => isset($exceptSecrets) ? $exceptSecrets : null,
+    '$validationErrors' => isset($validationErrors) ? $validationErrors : null,
   ],
 ]); ?>
 
-<?= $this->element('Header/header'); ?>
+<?= $this->element('header'); ?>
 <div class="users form">
   <form action="/cake_tutorial/login" id="UserDisplayFormForm" method="post" accept-charset="utf-8">
     <?= $this->element('Form/methodImplier', ['method' => 'POST']); ?>

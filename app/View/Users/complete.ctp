@@ -1,7 +1,7 @@
 <?=
-  $this->element('Debug/debug', [
+  $this->element('debug', [
     'arrays' => [
-      '$loginUser' => $loginUser,
+      '$loginUser' => isset($loginUser) ? $loginUser : null,
     ],
   ]);
 ?>

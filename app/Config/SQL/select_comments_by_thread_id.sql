@@ -1,1 +1,0 @@
-SELECT * FROM comments INNER JOIN users ON comments.user_id = users.user_id WHERE thread_id = :thread_id ORDER BY comments.created_datetime ASC;

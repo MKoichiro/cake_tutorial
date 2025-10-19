@@ -1,14 +1,14 @@
 <?=
-  $this->element('Debug/debug', [
+  $this->element('debug', [
     'arrays' => [
-      '$threads' => $threads,
+      '$threads' => isset($threads) ? $threads : null,
     ],
   ]);
 ?>
 
 <h1>スレッド一覧</h1>
 
-<a href="<?= $this->Html->url(['action' => 'createThread']); ?>">新規スレッド作成</a>
+<a href="/cake_tutorial/threads">新規スレッド作成</a>
 
 <?php if (empty($threads)): ?>
   <p>スレッドが見つかりません。</p>
@@ -16,11 +16,7 @@
   <ul>
     <?php foreach ($threads as $thread): ?>
       <li>
-        <a href="<?= $this->Html->url([
-          'controller' => 'threads',
-          'action'     => 'show',
-          $thread['threads']['uid'],
-          ]); ?>">
+        <a href="/cake_tutorial/threads/<?= h($thread['threads']['uid']); ?>">
           <div>
             <h2>
               <?= h($thread['threads']['title']); ?>

@@ -1,8 +1,8 @@
 <?=
-  $this->element('Debug/debug', [
+  $this->element('debug', [
     'arrays' => [
-      '$exceptSecrets'    => $exceptSecrets,
-      '$validationErrors' => $validationErrors,
+      '$exceptSecrets'    => isset($exceptSecrets) ? $exceptSecrets : null,
+      '$validationErrors' => isset($validationErrors) ? $validationErrors : null,
     ],
   ]);
 ?>

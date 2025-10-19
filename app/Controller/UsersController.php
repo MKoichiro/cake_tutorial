@@ -1,19 +1,21 @@
 <?php
-App::uses('AppController', 'Controller');
-include('../Lib/Validation/Validator.php');
-include('../Service/UserService.php');
+
+App::uses('AppController',       'Controller');
+App::uses('UserService',         'Service');
+App::uses('MessageBoardService', 'Service');
 
 class UsersController extends AppController {
-
   public $components = ['Authenticate'];
 
   private $userService;
+  private $messageBoardService;
   private $validator;
 
   public function __construct($request = null, $response = null) {
     parent::__construct($request, $response);
-    $this->userService = new UserService();
-    $this->validator   = new Validator();
+    $this->userService         = new UserService();
+    $this->messageBoardService = new MessageBoardService();
+    $this->validator           = new Validator();
   }
 
   public function register() {
@@ -86,5 +88,39 @@ class UsersController extends AppController {
     $this->set('loginUser', $this->Authenticate->getLoginUser());
     $this->Flash->success(__('登録に成功しました。'));
     return $this->render('complete');
+  }
+
+  public function show($uid = null) {
+    $this->request->allowMethod('get');
+    $requestedUserUid = $this->request->param('uid');
+
+    // ユーザー情報取得
+    if ($this->userService->fetchByUid($requestedUserUid)) {
+      $userData = $this->userService->getLastResult();
+    } else {
+      $this->Flash->error($this->userService->getLastError('message'));
+      return $this->redirect(['controller' => 'Pages', 'action' => 'home']);
+    }
+
+    if ($this->messageBoardService->fetchThreadsByUserUid($requestedUserUid)) {
+      $threadsData = $this->messageBoardService->getLastResult();
+    } else {
+      $this->Flash->error($this->messageBoardService->getLastError('message'));
+      // return $this->redirect(['controller' => 'Pages', 'action' => 'home']);
+    }
+
+    if ($this->messageBoardService->fetchCommentsWithThreadsByUserUid($requestedUserUid)) {
+      $commentsWithThreadsData = $this->messageBoardService->getLastResult();
+    } else {
+      $this->Flash->error($this->messageBoardService->getLastError('message'));
+      // return $this->redirect(['controller' => 'Pages', 'action' => 'home']);
+    }
+
+    $this->set([
+      'userData'                => $userData,
+      'threadsData'             => $threadsData,
+      'commentsWithThreadsData' => $commentsWithThreadsData,
+    ]);
+    return $this->render('show');
   }
 }

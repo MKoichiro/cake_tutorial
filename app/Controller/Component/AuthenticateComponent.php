@@ -1,54 +1,96 @@
 <?php
+
 App::uses('Component', 'Controller');
 App::uses('AuthenticateService', 'Service');
+App::uses('ArrayUtil', 'Lib/Utility');
 App::uses('PublicError', 'Lib/PublicError');
 
 class AuthenticateComponent extends Component {
-  public $components = ['Session'];
-  private $loginError;
-  private $authService;
+    public $components = ['Flash', 'Session'];
+    private $authenticateService;
 
-  public function __construct(ComponentCollection $collection, $settings = []) {
-    parent::__construct($collection, $settings);
-    $this->setLoginError(null);
-    $this->authService = new AuthenticateService();
-  }
-
-  private function setLoginError($type = 'auth', $message = null, $exception = null, $code = null) {
-    $this->loginError = new PublicError($type, $message, $exception, $code);
-  }
-  public function getLoginError($attr = null) {
-    return $this->loginError->getData($attr);
-  }
-
-  public function login($credentials) {
-    // 認証失敗
-    if (!$this->authService->authenticate($credentials)) {
-      $this->setLoginError($this->authService->getLastError());
-      return false;
+    public function __construct(ComponentCollection $collection, $settings = []) {
+        parent::__construct($collection, $settings);
+        $this->authenticateService = new AuthenticateService();
     }
-    // 認証成功: セッションを開始
-    $this->Session->renew();
-    $this->Session->write('Auth.User', $this->authService->getLoginUser());
-    CakeLog::write('debug', 'AuthenticateComponent#login: Session started.' . print_r($this->Session->read(), true));
-    return true;
-  }
 
-  public function isLoggedIn() {
-    return !is_null($this->getLoginUser());
-  }
+    /**
+     * ログイン処理
+     * 
+     * @param array{ 'email' => string, 'password' => string } $credentials
+     * @return bool 処理の成否
+     */
+    public function login($credentials) {
+        // 既にログイン済み
+        if ($this->isLoggedIn()) {
+            return true;
+        }
 
-  public function getLoginUser() {
-    return $this->Session->read('Auth.User');
-  }
-
-  public function logout() {
-    if (!$this->isLoggedIn()) {
-      return false;
+        // 認証試行
+        if (!($user = $this->authenticateService->authenticate($credentials))) {
+            // 失敗
+            $this->Flash->error('メールアドレスまたはパスワードが正しくありません。');
+            return false;
+        } else {
+            // 成功: セッションを開始
+            $this->Session->renew();
+            $this->Session->write('Auth.User', $user);
+            return true;
+        }
     }
-    $this->Session->destroy();
-    return true;
-  }
 
+    /**
+     * ログアウト
+     * @return bool
+     */
+    public function logout() {
+        $this->Session->destroy();
+        return true;
+    }
 
+    /**
+     * ログイン済みかどうか判定
+     * 
+     * @return bool
+     */
+    public function isLoggedIn() {
+        return !is_null($this->loginUser());
+    }
+
+    /**
+     * ログインユーザー情報取得
+     * 
+     * @return array|null ログインユーザー情報、未ログイン時は null
+     */
+    public function loginUser() {
+        return $this->Session->read('Auth.User');
+    }
+
+    /**
+     * ログインユーザー情報の特定属性取得
+     * 
+     * @param mixed ...$attrs 取得したい属性名の可変引数リスト
+     * @return array|null 指定された属性のみを含む連想配列、未ログイン時は null
+     */
+    public function getLoginUserValues(...$attrs) {
+        $user = $this->loginUser();
+
+        if (is_null($user)) {
+            return null;
+        } elseif (empty($attrs)) {
+            return $user;
+        }
+
+        return ArrayUtil::extract($user, $attrs);
+    }
+
+    /**
+     * ログインユーザー情報の特定属性取得（単一属性版）
+     * 
+     * @param string $attr 取得したい属性名
+     * @return mixed|null 指定された属性の値、未ログイン時は null
+     */
+    public function getLoginUserValue($attr) {
+        return $this->getLoginUserValues($attr)[$attr];
+    }
 }

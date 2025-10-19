@@ -1,10 +1,10 @@
 <?=
-  $this->element('Debug/debug', [
+  $this->element('debug', [
     'arrays' => [
-      '$threadWithAuthorData'       => $threadWithAuthorData,
-      '$commentsWithAuthorsData'     => $commentsWithAuthorsData,
-      '$inputCommentData' => $inputCommentData,
-      '$validationErrors' => $validationErrors,
+      '$threadWithAuthorData'    => isset($threadWithAuthorData) ? $threadWithAuthorData : null,
+      '$commentsWithAuthorsData' => isset($commentsWithAuthorsData) ? $commentsWithAuthorsData : null,
+      '$inputCommentData'        => isset($inputCommentData) ? $inputCommentData : null,
+      '$validationErrors'        => isset($validationErrors) ? $validationErrors : null,
     ],
   ]);
 ?>

@@ -1,7 +1,7 @@
 <?php
 
 class StringUtil {
-  public static function createUuid() {
+  public static function generateUuid() {
     return CakeText::uuid();
   }
 }

@@ -29,7 +29,7 @@
 	// Router::connect('/', ['controller' => 'posts', 'action' => 'index']);
 
 // UUIDの正規表現（ハイフン区切り、大小許容）
-$UUIDRegExp = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+$UUIDRegExp = '[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}';
 
 // ユーザー登録
 Router::connect(
@@ -65,22 +65,25 @@ Router::connect(
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'home']
 );
 Router::connect(
-	'/threads/createThread',
+	'/threads',
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'createThread']
 );
 Router::connect(
-	'/threads/create',
+	'/threads',
 	['[method]' => 'POST', 'controller' => 'threads', 'action' => 'create']
 );
 Router::connect(
-	'/threads/show/:uid',
+	'/threads/:uid',
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'show'],
-	['pass' => ['uid'], 'uid' => $UUIDRegExp]
+	[
+		'pass' => ['uid'],
+		// 'uid' => $UUIDRegExp
+	]
 );
 
 // コメント
 Router::connect(
-	'/threads/:thread_uid/createComment',
+	'/threads/:thread_uid/comments',
 	['[method]' => 'POST', 'controller' => 'comments', 'action' => 'createComment'],
 	['pass' => ['thread_uid'], 'thread_uid' => $UUIDRegExp]
 );

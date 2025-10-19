@@ -1,8 +1,8 @@
 <?=
-  $this->element('Debug/debug', [
+  $this->element('debug', [
     'arrays' => [
-      '$threadData'       => $threadData,
-      '$validationErrors' => $validationErrors,
+      '$threadData'       => isset($threadData) ? $threadData : null,
+      '$validationErrors' => isset($validationErrors) ? $validationErrors : null,
     ],
   ]);
 ?>

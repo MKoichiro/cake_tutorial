@@ -1,40 +1,29 @@
 <?php
 
-App::uses('AppModel',     'Model');
-App::uses('DatabaseUtil', 'Lib/Utility');
+App::uses('BaseModel', 'Model');
 
-class CommentModelException extends Exception {}
-
-class Comment extends AppModel {
-  public function insertComment($params) {
-    $sql = DatabaseUtil::sqlReader('insert_comment.sql');
-
-    try {
-      $result = $this->query($sql, $params);
-    } catch (Exception $e) {
-      throw $e;
+class Comment extends BaseModel {
+    public function insert($params) {
+        return $this->executeSql([
+            'queryType' => 'insertOne',
+            'queryKey'  => 'comment',
+            'params'    => $params,
+        ]);
     }
 
-    if ($result === false) {
-      throw new CommentModelException();
+    public function selectWithUserByThreadId($params) {
+        return $this->executeSql([
+            'queryType' => 'selectMany',
+            'queryKey'  => 'comments_withUsers_byThreadId',
+            'params'    => $params,
+        ]);
     }
 
-    return true;
-  }
-
-  public function selectWithUserByThreadID($params) {
-    $sql = DatabaseUtil::sqlReader('select_comments_by_thread_id.sql');
-
-    try {
-      $result = $this->query($sql, $params);
-    } catch (Exception $e) {
-      throw $e;
+    public function selectWithThreadsByUserUid($params) {
+        return $this->executeSql([
+            'queryType' => 'selectMany',
+            'queryKey'  => 'comments_withThreads_byUserUid',
+            'params'    => $params,
+        ]);
     }
-
-    if ($result === false) {
-      throw new CommentModelException();
-    }
-
-    return $result[0];
-  }
 }

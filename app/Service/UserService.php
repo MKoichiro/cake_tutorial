@@ -6,57 +6,70 @@ App::uses('StringUtil',   'Lib/Utility');
 App::uses('DatabaseUtil', 'Lib/Utility');
 
 class UserService extends BaseService {
+    private $userModel;
 
-  private $userModel;
-  public function __construct() {
-    parent::__construct();
-    $this->userModel = new User();
-  }
-
-  public function register($userInfo) {
-    // 引数ガード
-    if (!is_array($userInfo) || is_null($userInfo) || !isset($userInfo['display_name']) || !isset($userInfo['email']) || !isset($userInfo['password'])) {
-      $this->setLastError('unexpected');
-      return false;
+    public function __construct() {
+        parent::__construct();
+        $this->userModel = new User();
     }
 
-    // パラメータ発行
-    $params = [
-      'uid'           => StringUtil::createUuid(),
-      'display_name'  => $userInfo['display_name'],
-      'email'         => mb_strtolower($userInfo['email']),
-      'password_hash' => DatabaseUtil::hashPassword($userInfo['password']),
-    ];
+    /**
+     * ユーザー登録
+     * 
+     * @param array $userInfo
+     * @return bool 処理の成否
+     */
+    public function register($userInfo) {
+        $params = [
+            'uid'           => StringUtil::generateUuid(),
+            'display_name'  => $userInfo['display_name'],
+            'email'         => mb_strtolower($userInfo['email']),
+            'password_hash' => DatabaseUtil::hashPassword($userInfo['password']),
+        ];
 
-    // DB: 登録実行
-    try {
-      $result = $this->userModel->insertUser($params);
-      $this->setLastResult($result);
-      return true;
-    } catch (Exception $e) {
-      $this->setLastError('server', null, $e);
-      return false;
-    }
-  }
-
-  public function isEmailExists($email) {
-    // 引数ガード
-    if (is_null($email) || !is_string($email) || trim($email) === '') {
-      $this->setLastError('unexpected');
-      return null;
+        try {
+            $this->setLastResult($this->userModel->insert($params));
+            return true;
+        } catch (Exception $e) {
+            $this->setLastError('server', null, $e);
+            return false;
+        }
     }
 
-    // パラメータ発行
-    $params = ['email' => mb_strtolower($email)];
+    /**
+     * １件取得: users.uid に紐づくユーザー
+     * 
+     * @param string $userUid
+     * @return bool 処理の成否
+     */
+    public function fetchByUid($userUid) {
+        $params = ['uid' => $userUid];
 
-    // DB: メールアドレス存在チェック
-    try {
-      $count = $this->userModel->countUsersByEmail($params);
-      $this->setLastResult($count);
-      return $count > 0;
-    } catch (Exception $e) {
-      $this->setLastError('server', null, $e);
-      return null;
+        try {
+            $this->setLastResult($this->userModel->selectByUid($params));
+            return true;
+        } catch (Exception $e) {
+            $this->setLastError('server', null, $e);
+            return false;
+        }
     }
-  }
+
+    // TODO: 返り値の再検討
+    /**
+     * メールアドレス存在確認
+     * 
+     * @param string $email
+     * @return bool 処理の成否
+     */
+    public function isEmailExists($email) {
+        $params = ['email' => mb_strtolower($email)];
+
+        try {
+            $this->setLastResult($this->userModel->countByEmail($params));
+            return true;
+        } catch (Exception $e) {
+            $this->setLastError('server', null, $e);
+            return false;
+        }
+    }
 }

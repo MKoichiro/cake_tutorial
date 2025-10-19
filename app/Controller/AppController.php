@@ -38,22 +38,17 @@ class AppController extends Controller {
     'Authorize',
   ];
 
-  public static $appWhiteList = [
-    'public' => [
-      'users'           => ['register', 'confirm', 'complete'],
-      'threads'         => ['home'],
-      'authentications' => [],
-    ],
-    'loginUser' => [
-      'users'           => [],
-      'threads'         => ['home', 'new', 'create'],
-      'authentications' => [],
-    ],
-  ];
+  // AppController から指定する場合
+  // public const APP_WHITE_LIST = [
+  //   'loginUser' => [
+  //     'users'           => [],
+  //     'threads'         => ['new', 'create'],
+  //     'authentications' => [],
+  //   ],
+  // ];
 
   public function beforeFilter() {
     parent::beforeFilter();
-    CakeLog::write('debug', 'allow() called from AppController');
     $this->Authorize->allow();
   }
 }
