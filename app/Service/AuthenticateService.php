@@ -3,6 +3,7 @@
 App::uses('BaseService', 'Service');
 App::uses('User', 'Model');
 App::uses('DatabaseUtil', 'Lib/Utility');
+App::uses('AppUtil', 'Lib/Utility');
 
 class AuthenticateService extends BaseService {
     private $userModel;
@@ -23,15 +24,16 @@ class AuthenticateService extends BaseService {
         $params = ['email' => mb_strtolower($credentials['email'])];
 
         // 認証失敗: email に紐づくユーザー無し
-        if (!$this->userModel->selectWithSecretsByEmail($params)) {
+        if (!($user = $this->userModel->selectWithSecretsByEmail($params)['users'])) {
             $failure = true;
         } else {
             // 認証失敗: パスワード不一致
-            $user = $this->userModel->getLastResult();
             if (!DatabaseUtil::verifyPassword($credentials['password'], $user['password_hash'])) {
+                CakeLog::write('debug', 'Password mismatch for email: ' . $credentials['email']);
                 $failure = true;
             }
         }
+        CakeLog::write('debug', '$user: ' . json_encode($user));
 
         if ($failure) {
             $this->setLastError('auth', 'メールアドレスまたはパスワードが正しくありません。');

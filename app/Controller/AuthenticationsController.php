@@ -45,10 +45,11 @@ class AuthenticationsController extends AppController {
     }
 
     // 認証: 失敗
-    if (!$this->Authenticate->login($userInput)) {
-      $this->Flash->error($this->Authenticate->getLoginError('message'));
-      return $this->redirect(['[method]' => 'GET', 'action' => 'displayForm']);
-    }
+    // if (!$this->Authenticate->login($userInput)) {
+    //   $this->Flash->error($this->Authenticate->getLoginError('message'));
+    //   return $this->redirect(['[method]' => 'GET', 'action' => 'displayForm']);
+    // }
+    $this->Authenticate->login($userInput);
 
     // 認証: 成功
     $this->Session->delete('exceptSecrets');

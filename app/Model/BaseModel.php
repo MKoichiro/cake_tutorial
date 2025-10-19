@@ -32,9 +32,9 @@ class BaseModel extends AppModel {
         switch ($queryType) {
             case 'insertOne':
             case 'insertMany':
-                // return $this->query('SELECT LAST_INSERT_ID() AS id;')[0][0]['id'];
+                return $this->query('SELECT LAST_INSERT_ID() AS id;')[0][0]['id'];
                 // return $this->getDataSource()->lastInsertId();
-                return true;
+                // return true;
             case 'selectOne':
                 return $result === [] ? $result : $result[0];
             case 'selectMany':
@@ -97,17 +97,14 @@ class BaseModel extends AppModel {
         $queryType  = $queryInfo['queryType'];
         $params     = $queryInfo['params'] ?? [];
         $sql        = SqlResolver::resolve($queryType, $queryInfo['queryKey']);
-        CakeLog::write('debug', 'queryType: ' . $queryType, 'sql');
-        CakeLog::write('debug', 'SQL: ' . $sql, 'sql');
-        CakeLog::write('debug', 'PARAMS: ' . json_encode($params), 'sql');
+        CakeLog::write('debug', 'queryType: ' . $queryType);
+        CakeLog::write('debug', 'SQL: ' . $sql);
+        CakeLog::write('debug', 'params: ' . json_encode($params));
 
         // TODO: query vs fetchAll の使い分け要否の検討
         // $db = $this->getDataSource();
         switch ($queryType) {
             case 'insertOne':
-                // $db->fetchAll($sql, $params);
-                // $result = $db->lastInsertId();
-                // break;
             case 'insertMany':
             case 'selectOne':
                 // NOTE: 例えば、見つからなかったときに
@@ -119,7 +116,12 @@ class BaseModel extends AppModel {
                     $result = $this->query($sql);
                 } else {
                     // $result = $db->fetchAll($sql, $params);
-                    $result = $this->query($sql, $params);
+                    try {
+                        $result = $this->query($sql, $params);
+                    } catch (Exception $e) {
+                        CakeLog::write('debug', 'SQL Execution Error: ' . $e->getMessage());
+                        throw $e;
+                    }
                 }
         }
 

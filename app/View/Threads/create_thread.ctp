@@ -8,7 +8,7 @@
 ?>
 
 <div class="threads form">
-  <form action="/cake_tutorial/threads/create" id="ThreadForm" method="post" accept-charset="utf-8">
+  <form action="/cake_tutorial/threads" id="ThreadForm" method="post" accept-charset="utf-8">
     <?= $this->element('Form/methodImplier', ['method' => 'post']); ?>
 
     <fieldset>

@@ -20,15 +20,19 @@ class UserService extends BaseService {
      * @return bool 処理の成否
      */
     public function register($userInfo) {
+        $userUid = StringUtil::generateUuid();
         $params = [
-            'uid'           => StringUtil::generateUuid(),
+            'uid'           => $userUid,
             'display_name'  => $userInfo['display_name'],
             'email'         => mb_strtolower($userInfo['email']),
             'password_hash' => DatabaseUtil::hashPassword($userInfo['password']),
+            'created_by'    => $userUid,
+            'updated_by'    => $userUid,
         ];
 
         try {
             $this->setLastResult($this->userModel->insert($params));
+            CakeLog::write('debug', 'Inserted user UID: ' . $this->getLastResult());
             return true;
         } catch (Exception $e) {
             $this->setLastError('server', null, $e);
@@ -66,7 +70,7 @@ class UserService extends BaseService {
 
         try {
             $this->setLastResult($this->userModel->countByEmail($params));
-            return true;
+            return $this->getLastResult() > 0;
         } catch (Exception $e) {
             $this->setLastError('server', null, $e);
             return false;

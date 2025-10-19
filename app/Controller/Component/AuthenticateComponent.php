@@ -8,10 +8,16 @@ App::uses('PublicError', 'Lib/PublicError');
 class AuthenticateComponent extends Component {
     public $components = ['Flash', 'Session'];
     private $authenticateService;
+    private $controller;
 
     public function __construct(ComponentCollection $collection, $settings = []) {
         parent::__construct($collection, $settings);
         $this->authenticateService = new AuthenticateService();
+    }
+
+    public function initialize(Controller $controller) {
+        parent::initialize($controller);
+        $this->controller = $controller;
     }
 
     /**
@@ -30,7 +36,9 @@ class AuthenticateComponent extends Component {
         if (!($user = $this->authenticateService->authenticate($credentials))) {
             // 失敗
             $this->Flash->error('メールアドレスまたはパスワードが正しくありません。');
-            return false;
+            // return $this->controller->redirect(['[method]' => 'GET', 'action' => 'displayForm']);
+            return $this->controller->redirect('/login');
+            // return false;
         } else {
             // 成功: セッションを開始
             $this->Session->renew();
@@ -74,6 +82,8 @@ class AuthenticateComponent extends Component {
      */
     public function getLoginUserValues(...$attrs) {
         $user = $this->loginUser();
+        CakeLog::write('debug', 'loginUser: ' . print_r($user, true));
+        CakeLog::write('debug', 'getLoginUserValues called with attrs: ' . print_r($attrs, true));
 
         if (is_null($user)) {
             return null;

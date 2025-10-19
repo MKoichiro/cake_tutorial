@@ -3,6 +3,7 @@
 App::uses('AppController',       'Controller');
 App::uses('UserService',         'Service');
 App::uses('MessageBoardService', 'Service');
+App::uses('Validator',           'Lib/Validation');
 
 class UsersController extends AppController {
   public $components = ['Authenticate'];
@@ -40,13 +41,16 @@ class UsersController extends AppController {
     $this->Session->write('exceptSecrets', $exceptSecrets);
 
     // バリデーション１: 入力値チェック
+    $validationErrors = [];
     if (!$this->validator->execute($userInput, 'registerUser')) {
-      $this->Session->write('validationErrors', $this->validator->getErrorMessages());
-      return $this->redirect(['action' => 'register']);
+      $validationErrors = array_merge($validationErrors, $this->validator->getErrorMessages());
     }
     // バリデーション２: メールアドレス重複チェック
     if ($this->userService->isEmailExists($userInput['email'])) {
-      $this->Session->write('validationErrors', ['email' => 'このメールアドレスは既に登録されています。']);
+      $validationErrors['email'][] = 'このメールアドレスは既に登録されています。';
+    }
+    if (!empty($validationErrors)) {
+      $this->Session->write('validationErrors', $validationErrors);
       return $this->redirect(['action' => 'register']);
     }
 

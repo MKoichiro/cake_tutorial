@@ -33,54 +33,31 @@ class ThreadsController extends AppController {
     public function create() {
         $this->request->allowMethod('post');
         $threadData  = $this->request->data['Thread'];
-        $commentData = $this->request->data['Comment'];
 
         if (!$this->validator->execute($threadData, 'createThread')) {
             $this->set([
                 'threadData'       => $threadData,
-                'commentData'      => $commentData,
                 'validationErrors' => $this->validator->getErrorMessages(),
             ]);
             return $this->render('createThread');
         }
 
         // エンティティ登録
-        $loginUser = $this->Authenticate->getLoginUser();
-        $authorData = [
-            'user_id' => $loginUser['user_id'],
-            'uid'     => $loginUser['uid'],
-        ];
+        $authorData = $this->Authenticate->getLoginUserValues('user_id', 'uid');
         // １スレッド作成
         if (!$this->messageBoardService->createThread($threadData, $authorData)) {
             $this->Flash->error($this->messageBoardService->getLastError('message'));
-            $this->set([
-                'threadData'  => $threadData,
-                'commentData' => $commentData,
-            ]);
+            $this->set(['threadData' => $threadData]);
             return $this->render('createThread');
         }
         $threadUid = $this->messageBoardService->getLastResult();
 
-        // ２コメント作成
-        if (!$this->messageBoardService->createComment($threadUid, $commentData, $authorData)) {
-            $this->Flash->error($this->messageBoardService->getLastError('message'));
-            $this->set([
-                'threadData'  => $threadData,
-                'commentData' => $commentData,
-            ]);
-            return $this->render('createThread');
-        }
 
         $this->Flash->success('スレッドを作成しました。');
-        return $this->redirect([
-            'controller' => 'threads',
-            'action'     => 'show',
-            $threadUid,
-        ]);
+        return $this->redirect("/threads/$threadUid");
     }
 
     public function show($uid = null) {
-        CakeLog::debug("ThreadsController::show called uid={$uid}");
         $this->request->allowMethod('get');
         $threadUid = $this->request->param('uid');
 

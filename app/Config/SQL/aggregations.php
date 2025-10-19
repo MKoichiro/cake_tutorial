@@ -3,7 +3,7 @@
 return [
     // === COUNT ====================
     'count_users_byEmail' => <<<SQL
-        SELECT COUNT(*) AS `count` FROM `users` WHERE `email` = :email;
+        SELECT COUNT(*) AS count FROM users WHERE email = :email;
     SQL,
 
     // === SUM ======================
