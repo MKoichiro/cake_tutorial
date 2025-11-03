@@ -15,7 +15,7 @@ class Checker {
       if (!self::isValidArgs($formInput, $fieldName, $functionName)) {
         return true;
       }
-      return strlen($formInput[$fieldName]) < $length;
+      return mb_strlen($formInput[$fieldName]) < $length;
     };
   }
   public static function max($length) {
@@ -24,7 +24,7 @@ class Checker {
       if (!self::isValidArgs($formInput, $fieldName, $functionName)) {
         return true;
       }
-      return strlen($formInput[$fieldName]) > $length;
+      return mb_strlen($formInput[$fieldName]) > $length;
     };
   }
   public static function notMatch($regExp) {

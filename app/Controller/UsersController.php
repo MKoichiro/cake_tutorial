@@ -89,7 +89,7 @@ class UsersController extends AppController {
     // 登録後、自動ログイン
     $this->Authenticate->login($credentials);
 
-    $this->set('loginUser', $this->Authenticate->getLoginUser());
+    $this->set('loginUser', $this->Authenticate->getLoginUserValues('uid', 'display_name'));
     $this->Flash->success(__('登録に成功しました。'));
     return $this->render('complete');
   }
