@@ -6,7 +6,7 @@ App::uses('MessageBoardService', 'Service');
 App::uses('Validator',           'Lib/Validation');
 
 class UsersController extends AppController {
-  public $components = ['Authenticate'];
+  // public $components = ['Authenticate'];
 
   private $userService;
   private $messageBoardService;

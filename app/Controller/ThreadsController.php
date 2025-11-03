@@ -5,7 +5,7 @@ App::uses('MessageBoardService', 'Service');
 App::uses('Validator',           'Lib/Validation');
 
 class ThreadsController extends AppController {
-    public $components = ['Authorize', 'Authenticate', 'Flash'];
+    // public $components = ['Authorize', 'Authenticate', 'Flash'];
 
     private $messageBoardService;
     private $validator;

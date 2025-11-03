@@ -33,7 +33,7 @@ App::uses('Controller', 'Controller');
 class AppController extends Controller {
   public $components = [
     'Session',
-    'Flash',
+    'Flash' => ['className' => 'CustomizedFlash'],
     'Authenticate',
     'Authorize',
   ];

@@ -6,7 +6,10 @@ App::uses('ArrayUtil', 'Lib/Utility');
 App::uses('PublicError', 'Lib/PublicError');
 
 class AuthenticateComponent extends Component {
-    public $components = ['Flash', 'Session'];
+    public $components = [
+        'Flash' => ['className' => 'CustomizedFlash'],
+        'Session'
+    ];
     private $authenticateService;
     private $controller;
 

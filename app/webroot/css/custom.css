@@ -141,6 +141,58 @@ span.material-symbols-outlined {
     color: var(--color-tenik-orange);
 }
 
+/* Flash Messages */
+#flashMessage {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    padding: 0.25rem 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-self: center;
+    min-width: 30%;
+    height: 1.5rem;
+    line-height: 1.5rem;
+}
+
+#flashMessage * {
+    outline: 1px solid black;
+}
+
+#flashMessage .message-content {
+    margin-right: auto;
+}
+
+#flashMessage.success {
+    background-color: var(--color-success-bg);
+    color: var(--color-success-font);
+}
+
+#flashMessage.success button {
+    color: var(--color-success-font);
+}
+
+#flashMessage.error {
+    background-color: var(--color-error-bg);
+    color: var(--color-error-font);
+}
+
+#flashMessage.error button {
+    color: var(--color-error-font);
+}
+
+#flashMessage.info {
+    background-color: var(--color-info-bg);
+    color: var(--color-info-font);
+}
+
+#flashMessage.info button {
+    color: var(--color-info-font);
+}
+
+
+
 /* Form */
 .form {
     --input-border-width: 1px;

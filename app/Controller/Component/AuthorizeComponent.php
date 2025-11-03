@@ -4,7 +4,7 @@ App::uses('Component', 'Controller');
 App::uses('PublicError', 'Lib/PublicError');
 
 class AuthorizeComponent extends Component {
-    public $components = ['Session', 'Flash', 'Authenticate'];
+    public $components = ['Session', 'Flash' => ['className' => 'CustomizedFlash'], 'Authenticate'];
     private $controller;
     public const DEFAULT_WHITE_LIST = [
         'public' => [
