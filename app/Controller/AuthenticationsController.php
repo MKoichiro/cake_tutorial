@@ -19,7 +19,7 @@ class AuthenticationsController extends AppController {
      * ログインフォームの表示
      */
     public function login() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
 
         // ビューに渡すデータを初期化
@@ -46,7 +46,7 @@ class AuthenticationsController extends AppController {
      * ログイン
      */
     public function auth() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('post');
 
         // CSRF トークンをチェック
@@ -116,7 +116,7 @@ class AuthenticationsController extends AppController {
      * ログアウト
      */
     public function logout() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('delete');
 
         // ログアウトの共通処理

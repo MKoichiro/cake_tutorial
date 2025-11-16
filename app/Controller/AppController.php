@@ -57,6 +57,11 @@ class AppController extends Controller {
 
         // セッションからログインユーザーの uid を取得
         $loginUserUid = $this->Login->getLoginUserUid();
+        CakeLog::write(
+            'debug',
+            __CLASS__ . '#' . __FUNCTION__ . " -- \n"
+            . "log-in user uid from session: " . print_r($loginUserUid, true)
+        );
         $loginUserInfo = [];
         if ($loginUserUid !== null) {
             // uid で検索して display_name とともに取得

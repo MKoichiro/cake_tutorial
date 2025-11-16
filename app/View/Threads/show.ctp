@@ -98,15 +98,16 @@
                             </p>
                         </div>
                         <dl class="comment-meta-list">
-                            <?php if ($authorData['user_uid'] === $data['users']['user_uid']): ?>
-                                <span class="material-symbols-outlined">
-                                    admin_panel_settings
-                                </span>
-                            <?php endif; ?>
                             <dt>
-                                <span class="material-symbols-outlined">
-                                    person
-                                </span>
+                                <?php if ($data['comments']['user_id'] === $threadWithAuthorData['threads']['user_id']): ?>
+                                    <span class="material-symbols-outlined">
+                                        admin_panel_settings
+                                    </span>
+                                <?php else: ?>
+                                    <span class="material-symbols-outlined">
+                                        person
+                                    </span>
+                                <?php endif; ?>
                             </dt>
                             <dd>
                                 <a class="underline-link" href="<?= $rootPath; ?>/users/<?= h($data['users']['user_uid']); ?>">
@@ -142,7 +143,7 @@
             </small>
         <?php else: ?>
             <div class="form-wrap">
-                <form id="commentForm" action="<?= $rootPath; ?>/threads/<?= h($threadData['thread_uid']); ?>/comments/complete" method="post" accept-charset="utf-8">
+                <form id="commentForm" action="<?= $rootPath; ?>/threads/<?= h($threadWithAuthorData['threads']['thread_uid']); ?>/comments/complete" method="post" accept-charset="utf-8">
                     <fieldset>
                         <legend>コメントを投稿する</legend>
                         <div class="input text required">

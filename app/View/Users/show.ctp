@@ -4,6 +4,7 @@ $this->Html->script(
     ['block' => 'scriptBottom', 'defer' => true]
 ); ?>
 <?= $this->element('dialog', ['message' => '本当にこのスレッドを削除しますか？', 'method' => 'delete']); ?>
+<?= debug($this->viewVars); ?>
 
 <div class="view-container users-show">
     <?php if ($userData === null): ?>

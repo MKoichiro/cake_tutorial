@@ -31,7 +31,7 @@
         <?php endif; ?>
     </div>
 
-    <ul id="header-menu-acc-conteiner">
+    <ul id="header-menu-acc-container">
         <li>
             <a class="header-link link-home" href="<?= $rootPath; ?>/home">
                 <span class="material-symbols-outlined" data-icon="home">

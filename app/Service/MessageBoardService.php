@@ -415,9 +415,8 @@ class MessageBoardService {
     private function registerComment($baseParams, $commentUid = null, $dataSource = null) {
         // 主要項目のバリデーション
         $validationUnit = [
-            'comment_body' => [ 'required', 'notEmpty' ],
+            'comment_body' => $baseParams['comment_body'] !== null ? $baseParams['comment_body'] : '',
         ];
-        if ($baseParams['comment_body'] === null) { $baseParams['comment_body'] = ''; }
         $this->validator->execute($validationUnit, 'registerComment');
         if ($validationErrors = $this->validator->getErrorMessages()) {
             CakeLog::write(
@@ -795,7 +794,7 @@ class MessageBoardService {
             }
             $result['threadIsFound'] = true;
             // スレッド 1 件に紐づくコメント全件を取得
-            $commentsWithAuthorData = $this->fetchCommentsWithUsersByThreadId($threadWithAuthorData['thread']['thread_id']);
+            $commentsWithAuthorData = $this->fetchCommentsWithUsersByThreadId($threadWithAuthorData['threads']['thread_id']);
         } catch (Exception $e) {
             return $result;
         }

@@ -31,7 +31,7 @@ class LoginComponent extends Component {
      */
     public function login($authenticatedUserUid) {
         $this->Session->renew();
-        $this->Session->write('Auth.User', $authenticatedUserUid);
+        $this->Session->write(['Auth.User' => $authenticatedUserUid]);
 
         CakeLog::write(
             'info',

@@ -21,7 +21,7 @@ class ThreadsController extends AppController {
      * アプリのホーム画面(スレッド一覧)を表示
      */
     public function home() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
 
         // スレッド全件取得
@@ -42,7 +42,7 @@ class ThreadsController extends AppController {
      * スレッド作成フォームを表示
      */
     public function register() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
 
         // ビューに渡すデータを初期化
@@ -74,7 +74,7 @@ class ThreadsController extends AppController {
      * スレッド作成の入力内容確認画面を表示
      */
     public function confirm() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('post');
 
         // POST データを取得
@@ -129,7 +129,7 @@ class ThreadsController extends AppController {
      * スレッド作成
      */
     public function complete() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('post');
 
         // セッションからスレッドとコメントのデータを取得
@@ -172,7 +172,7 @@ class ThreadsController extends AppController {
      * スレッド編集画面を表示
      */
     public function edit() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
 
         $threadUid = $this->request->params['thread_uid'];
@@ -191,7 +191,7 @@ class ThreadsController extends AppController {
         }
 
         // 認可: オーナーでなければリダイレクト
-        if (!$this->Authorize->isAuthorizedAs('owner', ['user_uid' => $fetchResult['user']['user_uid']])) {
+        if (!$this->Authorize->isAuthorizedAs('owner', ['user_uid' => $fetchResult['users']['user_uid']])) {
             CakeLog::write('error', '... 認可エラー: 権限がありません。');
             return $this->redirect('/home');
         }
@@ -217,8 +217,8 @@ class ThreadsController extends AppController {
         $this->set([
             'requestData' => $requestData, // スレッド更新フォームのユーザー入力値
             'validationErrors' => $validationErrors, // バリデーションエラーのメッセージ
-            'threadData' => $fetchResult['thread'], // スレッドデータ
-            'userData' => $fetchResult['user'], // ユーザーデータ
+            'threadData' => $fetchResult['threads'], // スレッドデータ
+            'userData' => $fetchResult['users'], // ユーザーデータ
         ]);
         return $this->render('edit');
     }
@@ -228,7 +228,7 @@ class ThreadsController extends AppController {
      * スレッド更新
      */
     public function update() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('put');
 
         $threadUid = $this->request->params['thread_uid'];
@@ -247,8 +247,8 @@ class ThreadsController extends AppController {
             throw new InternalErrorException();
         }
 
-        $threadData = $fetchResult['thread'];
-        $userData = $fetchResult['user'];
+        $threadData = $fetchResult['threads'];
+        $userData = $fetchResult['users'];
 
         // 認可: オーナーでなければリダイレクト
         if (!$this->Authorize->isAuthorizedAs('owner', ['user_uid' => $userData['user_uid']])) {
@@ -322,7 +322,7 @@ class ThreadsController extends AppController {
      * スレッド削除(未実装)
      */
     public function delete() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('delete');
         $this->Flash->info('未実装');
         return $this->redirect('/home');
@@ -333,8 +333,14 @@ class ThreadsController extends AppController {
      * スレッド詳細画面を表示
      */
     public function show() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
+
+        CakeLog::write(
+            'debug',
+            __CLASS__ . '#' . __FUNCTION__ . ' -- session_id: ' . session_id()
+            . ', Auth.User: ' . print_r($this->Session->read('Auth.User'), true)
+        );
 
         // URL パラメーターから thread の uid を取得
         $threadUid = $this->request->params['thread_uid'];

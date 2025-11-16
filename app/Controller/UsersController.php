@@ -22,7 +22,7 @@ class UsersController extends AppController {
      * ユーザー登録の入力画面を表示
      */
     public function register() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
 
         // ビューに渡すデータを初期化
@@ -55,7 +55,7 @@ class UsersController extends AppController {
      * ユーザー登録の入力内容確認画面を表示
      */
     public function confirm() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('post');
 
         // POST データを取得
@@ -109,7 +109,7 @@ class UsersController extends AppController {
      * ユーザー登録の完了画面を表示
      */
     public function complete() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('post');
 
         // POST データ取得: パスワードのみ
@@ -172,7 +172,7 @@ class UsersController extends AppController {
      * public に show(): ユーザーが投稿したマイページ画面を表示
      */
     public function show() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
 
         // URL パラメーターから user の uid を取得

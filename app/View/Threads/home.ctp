@@ -1,3 +1,4 @@
+<?= debug($this->viewVars); ?>
 <div class="view-container app-card-context threads-home">
     <h1 class="app-page-title home">
         <span class="material-symbols-outlined">

@@ -19,8 +19,8 @@ class CommentsController extends AppController {
 
 
     /** コメント作成 */
-    public function create() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+    public function complete() {
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('post');
 
         // URL パラメーターから thread_uid を取得
@@ -75,7 +75,7 @@ class CommentsController extends AppController {
         }
 
         // コメント DB に登録
-        $authorUid = $this->Login->getLoginUserValue('user_id');
+        $authorUid = $this->Login->getLoginUserUid();
         $result = $this->messageBoardService->dispatchRegisterComment($requestedCommentData['Comment'], $threadUid, $authorUid);
         if (!$result) {
             throw new InternalErrorException();
@@ -89,7 +89,7 @@ class CommentsController extends AppController {
 
     /** コメント編集画面を表示 */
     public function edit() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         // $commentUid /edit
         $this->request->allowMethod('get');
 
@@ -151,7 +151,7 @@ class CommentsController extends AppController {
 
     /** コメント編集 */
     public function update() {
-        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('put');
 
         $threadUid = $this->request->params['thread_uid'];
