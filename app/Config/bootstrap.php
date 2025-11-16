@@ -49,7 +49,11 @@ Cache::config('default', array('engine' => 'File'));
  *     'Plugin'                    => array('/path/to/plugins/', '/next/path/to/plugins/'),
  * ));
  */
-App::build(['Service' => [APP . 'Service' . DS]]);
+// 追記: App::uses() のサーチ対象ディレクトリを登録
+App::build([
+	'Service' => [APP . 'Service' . DS],
+	'Sql'     => [APP . 'Config' . DS . 'SQL' . DS],
+]);
 
 /**
  * Custom Inflector rules can be set to correctly pluralize or singularize table, model, controller names or whatever other
@@ -99,17 +103,71 @@ Configure::write('Dispatcher.filters', array(
 /**
  * Configures default file logging options
  */
-App::uses('CakeLog', 'Log');
-CakeLog::config('debug', array(
-	'engine' => 'File',
-	'types' => array('notice', 'info', 'debug'),
-	'file' => 'debug',
-));
-CakeLog::config('error', array(
-	'engine' => 'File',
-	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
-	'file' => 'error',
-));
+// App::uses('CakeLog', 'Log');
+// CakeLog::config('debug', array(
+// 	'engine' => 'File',
+// 	'types' => array('notice', 'info', 'debug'),
+// 	'file' => 'debug',
+// ));
+// CakeLog::config('error', array(
+// 	'engine' => 'File',
+// 	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
+// 	'file' => 'error',
+// ));
 
-// 独自設定
-// Configure::write('App.sqlDir', APP . 'Config' . DS . 'SQL');
+// 追記
+date_default_timezone_set('Asia/Tokyo');
+
+// 追記: 環境定数を取得
+$platFormType = (isset($_ENV['PF_TYPE'])) ? $_ENV['PF_TYPE'] : trim(file_get_contents('C:/xampp/platform/pf_type'));
+define('PLATFORM_TYPE', $platFormType);
+
+// 追記: プロジェクトルートを環境ごとに動的に定義
+$config = require 'app_' . PLATFORM_TYPE . '.php';
+define('ROOT_URL', $config['rootUrl']);
+
+// 追記: 環境ごとにログ出力を制御
+switch (PLATFORM_TYPE) {
+	case 'localhost':
+		// CakeLog::config('dev-debug', [
+		// 	'engine' => 'File',
+		// 	'types' => ['debug'],
+		// 	'file' => 'dev/debug',
+		// ]);
+		CakeLog::config('dev-logs', [
+			'engine' => 'File',
+			'types' => [
+				'debug',
+				'info',
+				'notice',
+				'warning',
+				'error',
+				'critical',
+				'alert',
+				'emergency',
+			],
+			'file' => 'dev/logs',
+		]);
+		break;
+
+		// 以下未運用
+		case 'testing':
+			break;
+		case 'staging':
+			break;
+		case 'production':
+			CakeLog::config('prod-logs', [
+				'engine' => 'File',
+				'types' => [
+					'info',
+					'notice',
+					'warning',
+					'error',
+					'critical',
+					'alert',
+					'emergency',
+				],
+				'file' => 'prod/logs',
+			]);
+			break;
+}

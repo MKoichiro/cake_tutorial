@@ -28,10 +28,12 @@
 	// Router::connect('/', array('controller' => 'pages', 'action' => 'display', 'home'));
 	// Router::connect('/', ['controller' => 'posts', 'action' => 'index']);
 
-// UUIDの正規表現（ハイフン区切り、大小許容）
-$UUIDRegExp = '[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}';
+// 以下記
+// UUIDの正規表現(例)
+// 例: d5e72908-2862-492f-96db-1c36be17556a
+$uuidRegExp = '[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}';
 
-// ユーザー登録
+// UsersController
 Router::connect(
 	'/users/register',
 	['[method]' => 'GET', 'controller' => 'users', 'action' => 'register']
@@ -44,87 +46,88 @@ Router::connect(
 	'/users/complete',
 	['[method]' => 'POST', 'controller' => 'users', 'action' => 'complete']
 );
+Router::connect(
+	'/users/:user_uid',
+	['[method]' => 'GET', 'controller' => 'users', 'action' => 'show'],
+	['pass' => ['user_uid'], 'user_uid' => $uuidRegExp]
+);
 
-// ログイン・ログアウト
+// AuthenticationsController
 Router::connect(
 	'/login',
-	['[method]' => 'GET', 'controller' => 'authentications', 'action' => 'displayForm']
+	['[method]' => 'GET', 'controller' => 'authentications', 'action' => 'login']
 );
 Router::connect(
 	'/login',
-	['[method]' => 'POST', 'controller' => 'authentications', 'action' => 'login']
+	['[method]' => 'POST', 'controller' => 'authentications', 'action' => 'auth']
 );
 Router::connect(
 	'/logout',
 	['[method]' => 'DELETE', 'controller' => 'authentications', 'action' => 'logout']
 );
 
-// スレッド
+// ThreadsController
 Router::connect(
 	'/home',
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'home']
 );
 Router::connect(
-	'/threads',
-	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'createThread']
+	'/threads/register',
+	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'register']
 );
 Router::connect(
-	'/threads',
-	['[method]' => 'POST', 'controller' => 'threads', 'action' => 'create']
+	'/threads/confirm',
+	['[method]' => 'POST', 'controller' => 'threads', 'action' => 'confirm']
 );
 Router::connect(
-	'/threads/:uid',
+	'/threads/complete',
+	['[method]' => 'POST', 'controller' => 'threads', 'action' => 'complete']
+);
+Router::connect(
+	'/threads/:thread_uid',
 	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'show'],
+	['pass' => ['thread_uid'], 'thread_uid' => $uuidRegExp]
+);
+Router::connect(
+	'/threads/:thread_uid/edit',
+	['[method]' => 'GET', 'controller' => 'threads', 'action' => 'edit'],
+	['pass' => ['thread_uid'], 'thread_uid' => $uuidRegExp]
+);
+Router::connect(
+	'/threads/:thread_uid/update',
+	['[method]' => 'PUT', 'controller' => 'threads', 'action' => 'update'],
+	['pass' => ['thread_uid'], 'thread_uid' => $uuidRegExp]
+);
+Router::connect(
+	'/threads/:thread_uid/delete',
+	['[method]' => 'DELETE', 'controller' => 'threads', 'action' => 'delete'],
+	['pass' => ['thread_uid'], 'thread_uid' => $uuidRegExp]
+);
+
+// CommentsController
+Router::connect(
+	'/threads/:thread_uid/comments/complete',
+	['[method]' => 'POST', 'controller' => 'comments', 'action' => 'complete'],
+	['pass' => ['thread_uid'], 'thread_uid' => $uuidRegExp]
+);
+Router::connect(
+	'/threads/:thread_uid/comments/:comment_uid/edit',
+	['[method]' => 'GET', 'controller' => 'comments', 'action' => 'edit'],
 	[
-		'pass' => ['uid'],
-		// 'uid' => $UUIDRegExp
+		'pass' => ['thread_uid', 'comment_uid'],
+		'thread_uid' => $uuidRegExp,
+		'comment_uid' => $uuidRegExp
 	]
 );
-
-// コメント
 Router::connect(
-	'/threads/:thread_uid/comments',
-	['[method]' => 'POST', 'controller' => 'comments', 'action' => 'createComment'],
-	['pass' => ['thread_uid'], 'thread_uid' => $UUIDRegExp]
+	'/threads/:thread_uid/comments/:comment_uid/update',
+	['[method]' => 'PUT', 'controller' => 'comments', 'action' => 'update'],
+	[
+		'pass' => ['thread_uid', 'comment_uid'],
+		'thread_uid' => $uuidRegExp,
+		'comment_uid' => $uuidRegExp
+	]
 );
-
-/**
- * Users（RESTful）
- */
-// // コレクション
-// Router::connect('/users',
-//   array('[method]' => 'GET',  'controller' => 'users', 'action' => 'index')
-// );
-// Router::connect('/users/register',
-//   array('[method]' => 'GET', 'controller' => 'users', 'action' => 'displayRegister')
-// );
-// Router::connect('/users',
-//   array('[method]' => 'POST', 'controller' => 'users', 'action' => 'register')
-// );
-
-// // メンバー（uid）
-// Router::connect('/users/:uid',
-//   array('[method]' => 'GET',    'controller' => 'users', 'action' => 'view'),
-//   array('pass' => array('uid'), 'uid' => $UUIDRegExp)
-// );
-// Router::connect('/users/:uid',
-//   array('[method]' => 'PUT',    'controller' => 'users', 'action' => 'edit'),
-//   array('pass' => array('uid'), 'uid' => $UUIDRegExp)
-// );
-// Router::connect('/users/:uid',
-//   array('[method]' => 'PATCH',  'controller' => 'users', 'action' => 'edit'),
-//   array('pass' => array('uid'), 'uid' => $UUIDRegExp)
-// );
-// Router::connect('/users/:uid',
-//   array('[method]' => 'DELETE', 'controller' => 'users', 'action' => 'delete'),
-//   array('pass' => array('uid'), 'uid' => $UUIDRegExp)
-// );
-
-// （任意）トップをどこかに割り当てる場合
-// Router::connect('/', array('controller' => 'posts', 'action' => 'index'));
-
-// 規定ルートは読み込まない
-// require CAKE . 'Config' . DS . 'routes.php';
 
 /**
  * ...and connect the rest of 'Pages' controller's URLs.

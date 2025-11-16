@@ -1,49 +1,47 @@
-<?= $this->element('debug', [
-  'arrays' => [
-    '$exceptSecrets'    => isset($exceptSecrets) ? $exceptSecrets : null,
-    '$validationErrors' => isset($validationErrors) ? $validationErrors : null,
-  ],
-]); ?>
+<div class="view-container authenticates-login-form">
+    <div class="form">
+        <form action="<?= $rootPath; ?>/login" method="post" accept-charset="utf-8">
+            <?php #echo $this->element('csrf_token'); ?>
+            <fieldset>
+                <legend>ログイン</legend>
+                <div class="input email required">
+                    <label for="UserEmail">メールアドレス</label>
+                    <div class="input-error">
+                        <input
+                            name="data[User][email]"
+                            maxlength="254"
+                            type="email"
+                            id="UserEmail"
+                            value="<?= isset($safeUserData['email']) ? h($safeUserData['email']) : ''; ?>"
+                            required="required"
+                        >
+                        <?= $this->element('Form/errorMessages', ['errors' => $validationErrors, 'key' => 'email']); ?>
+                    </div>
+                </div>
 
-<?= $this->element('header'); ?>
-<div class="users form">
-  <form action="/cake_tutorial/login" id="UserDisplayFormForm" method="post" accept-charset="utf-8">
-    <?= $this->element('Form/methodImplier', ['method' => 'POST']); ?>
+                <div class="input password required">
+                    <label for="UserPassword">パスワード</label>
+                    <div class="input-error">
+                        <input
+                            name="data[User][password]"
+                            type="password"
+                            id="UserPassword"
+                            required="required"
+                        >
+                        <?= $this->element('Form/errorMessages', ['errors' => $validationErrors, 'key' => 'password']); ?>
+                    </div>
+                </div>
+            </fieldset>
 
-    <fieldset>
-      <legend>Login</legend>
-
-      <div class="input email required">
-        <label for="UserEmail">Email</label>
-        <input
-          name="data[User][email]"
-          maxlength="254"
-          type="email"
-          id="UserEmail"
-          value="<?= isset($userInput['email']) ? $userInput['email'] : ''; ?>"
-          required="required"
-        >
-        <?php if (isset($validationErrors['email'])): ?>
-          <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['email']]); ?>
-        <?php endif; ?>
-      </div>
-
-      <div class="input password required">
-        <label for="UserPassword">Password</label>
-        <input
-          name="data[User][password]"
-          type="password"
-          id="UserPassword"
-          required="required"
-        >
-        <?php if (isset($validationErrors['password'])): ?>
-          <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['password']]); ?>
-        <?php endif; ?>
-      </div>
-    </fieldset>
-
-    <div class="submit">
-      <input type="submit" value="Submit">
+            <div class="submit">
+                <button class="app-btn" type="submit">ログイン</button>
+            </div>
+        </form>
     </div>
-  </form>
+
+    <small>
+        はじめてご利用の方は
+        <a class="app-btn" href="<?= $rootPath; ?>/users/register">新規登録</a>
+        してください。
+    </small>
 </div>

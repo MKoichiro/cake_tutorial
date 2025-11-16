@@ -1,91 +1,75 @@
-<!-- <?=
-    $this->element('debug', [
-        'arrays' => [
-            '$exceptSecrets'        => isset($exceptSecrets) ? $exceptSecrets : null,
-            '$validationErrors' => isset($validationErrors) ? $validationErrors : null,
-        ],
-    ]);
-?> -->
+<div class="view-container users-register">
+    <?= $this->element('step_bar', ['step' => 'register']); ?>
 
-<div class="user-register view-container">
-    <?= $this->element('progress_bar', ['step' => 'register']); ?>
-    
-    <div class="users form">
-        <form action="/cake_tutorial/users/confirm" id="UserDisplayFormForm" method="post" accept-charset="utf-8">
-            <?= $this->element('Form/methodImplier', ['method' => 'post']); ?>
-
+    <div class="form-wrap">
+        <form action="<?= $rootPath; ?>/users/confirm" id="userDisplayForeForm" method="post" accept-charset="utf-8">
             <fieldset>
-                <legend>ユーザー情報を入力</legend>
-
-                <small><span class="required-star">*</span>の付いた項目は必須です。</small>
+                <legend>ユーザー情報を入力してください
+                    <small><span class="required-star">*</span>の付いた項目は必須です。</small>
+                </legend>
 
                 <div class="input text required">
-                    <label for="UserDisplayName">表示名</label>
+                    <label for="userDisplayName">表示名</label>
                     <div class="input-error">
                         <input
                             name="data[User][display_name]"
                             maxlength="30"
                             type="text"
-                            id="UserDisplayName"
-                            value="<?= isset($exceptSecrets['display_name']) ? $exceptSecrets['display_name'] : ''; ?>"
+                            id="userDisplayName"
+                            value="<?= isset($safeUserData['display_name']) ? h($safeUserData['display_name']) : ''; ?>"
                             required="required"
-                            >
-                        <?php if (isset($validationErrors['display_name'])): ?>
-                            <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['display_name']]); ?>
-                        <?php endif; ?>
+                        >
+                        <?= $this->element('Form/errorMessages', ['errors' => $validationErrors, 'key' => 'display_name']); ?>
                     </div>
                 </div>
 
                 <div class="input email required">
-                    <label for="UserEmail">メールアドレス</label>
+                    <label for="userEmail">メールアドレス</label>
                     <div class="input-error">
                         <input
                             name="data[User][email]"
                             maxlength="254"
                             type="email"
-                            id="UserEmail"
-                            value="<?= isset($exceptSecrets['email']) ? $exceptSecrets['email'] : ''; ?>"
+                            id="userEmail"
+                            value="<?= isset($safeUserData['email']) ? h($safeUserData['email']) : ''; ?>"
                             required="required"
                         >
-                        <?php if (isset($validationErrors['email'])): ?>
-                            <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['email']]); ?>
-                        <?php endif; ?>
+                        <?= $this->element('Form/errorMessages', ['errors' => $validationErrors, 'key' => 'email']); ?>
                     </div>
                 </div>
 
                 <div class="input password required">
-                    <label for="UserPassword">パスワード</label>
+                    <label for="userPassword">パスワード</label>
                     <div class="input-error">
                         <input
                             name="data[User][password]"
                             type="password"
-                            id="UserPassword"
+                            id="userPassword"
+                            value="<?= isset($safeUserData['password']) ? $safeUserData['password'] : ''; ?>"
                             required="required"
                         >
-                        <?php if (isset($validationErrors['password'])): ?>
-                            <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['password']]); ?>
-                        <?php endif; ?>
+                        <?= $this->element('Form/errorMessages', ['errors' => $validationErrors, 'key' => 'password']); ?>
                     </div>
                 </div>
 
                 <div class="input password required">
-                    <label for="UserPasswordConfirmation">パスワード確認</label>
+                    <label for="userPasswordConfirmation">パスワード (確認)</label>
                     <div class="input-error">
                         <input
                             name="data[User][password_confirmation]"
+                            maxlength="72"
                             type="password"
-                            id="UserPasswordConfirmation"
+                            id="userPasswordConfirmation"
+                            value="<?= isset($safeUserData['password_confirmation']) ? $safeUserData['password_confirmation'] : ''; ?>"
                             required="required"
                         >
-                        <?php if (isset($validationErrors['password_confirmation'])): ?>
-                            <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['password_confirmation']]); ?>
-                        <?php endif; ?>
+                        <?= $this->element('Form/errorMessages', ['errors' => $validationErrors, 'key' => 'password_confirmation']); ?>
                     </div>
                 </div>
             </fieldset>
 
             <div class="submit">
-                <button class="app-btn" type="submit">確認画面へ</button>
+                <button class="app-btn" type="submit">確認へ</button>
             </div>
         </form>
     </div>

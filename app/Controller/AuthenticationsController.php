@@ -1,70 +1,125 @@
 <?php
+
 App::uses('AppController', 'Controller');
 App::uses('Validator', 'Lib/Validation');
+App::uses('AuthenticateService', 'Service');
+
 
 class AuthenticationsController extends AppController {
-  private $validator;
+    private $validator;
+    private $AuthenticateService;
 
-  public function __construct($request = null, $response = null) {
-    parent::__construct($request, $response);
-    $this->validator = new Validator();
-  }
-
-  // ログインフォーム表示アクション
-  public function displayForm() {
-    $this->request->allowMethod('get');
-
-    // 既にログインしていればリダイレクト
-    if ($this->Authenticate->isLoggedIn()) {
-      return $this->redirect(['[method]' => 'GET', 'controller' => 'threads', 'action' => 'home']);
+    public function __construct($request = null, $response = null) {
+        parent::__construct($request, $response);
+        $this->validator = new Validator();
+        $this->AuthenticateService = new AuthenticateService();
     }
 
-    $this->set([
-      'exceptSecrets'    => $this->Session->read('exceptSecrets'),
-      'validationErrors' => $this->Session->read('validationErrors'),
-    ]);
+    /**
+     * ログインフォームの表示
+     */
+    public function login() {
+        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        $this->request->allowMethod('get');
 
-    // 再読み込みでクリア
-    $this->Session->delete('exceptSecrets');
-    $this->Session->delete('validationErrors');
+        // ビューに渡すデータを初期化
+        $safeUserData = [];
+        $validationErrors = [];
+        // (バリデーションエラーがあれば) ユーザー入力値とバリデーションエラーを読み込み
+        if ($this->Session->check('validationErrors')) {
+            $safeUserData = $this->Session->read('safeUserData');
+            $validationErrors = $this->Session->read('validationErrors');
+        }
+        $this->Session->delete('safeUserData');
+        $this->Session->delete('validationErrors');
 
-    $this->render('login');
-  }
-
-  // ログイン処理アクション
-  public function login() {
-    $this->request->allowMethod('post');
-    $userInput = $exceptSecrets = $this->request->data['User'];
-    unset($exceptSecrets['password']);
-    $this->Session->write('exceptSecrets', $exceptSecrets);
-
-    // バリデーションチェック
-    if (!$this->validator->execute($userInput, 'loginUser')) {
-      $this->Session->write('validationErrors', $this->validator->getErrorMessages());
-      return $this->redirect(['[method]' => 'GET', 'action' => 'displayForm']);
+        $this->set([
+            'safeUserData' => $safeUserData, // password 以外のユーザー入力値
+            'validationErrors' => $validationErrors, // バリデーションエラーのメッセージ
+            'noHeaderNav' => true, // ヘッダーのナビゲーションメニューを非表示にするフラグ
+        ]);
+        return $this->render('login');
     }
 
-    // 認証: 失敗
-    // if (!$this->Authenticate->login($userInput)) {
-    //   $this->Flash->error($this->Authenticate->getLoginError('message'));
-    //   return $this->redirect(['[method]' => 'GET', 'action' => 'displayForm']);
-    // }
-    $this->Authenticate->login($userInput);
 
-    // 認証: 成功
-    $this->Session->delete('exceptSecrets');
-    $this->Session->delete('validationErrors');
-    $this->Flash->success('ログインしました。');
-    return $this->redirect(['[method]' => 'GET', 'controller' => 'threads', 'action' => 'home']);
-  }
+    /**
+     * ログイン
+     */
+    public function auth() {
+        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        $this->request->allowMethod('post');
 
-  // ログアウト処理アクション
-  public function logout() {
-    $this->request->allowMethod('delete');
+        // CSRF トークンをチェック
+        // if (!$this->Session->check('csrfToken')) {
+        // ... throw new BadRequestException();
+        // }
 
-    if ($this->Authenticate->logout()) {
-      $this->Flash->success('ログアウトしました。');
+        // POST データを取得
+        $requestData = $this->request->data;
+        // 構造のチェック
+        if ((!isset($requestData['User']['email'])) || (!isset($requestData['User']['password']))) {
+            CakeLog::write('error', 'Invalid Request Data is given.');
+            throw new BadRequestException();
+        }
+
+        // 漏洩情報を落としたものをセッションに保存
+        $safeUserData = [
+            'email' => $requestData['User']['email'],
+        ];
+        CakeLog::write(
+            'info',
+            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            'User Input Email: '.$safeUserData['email']
+        );
+        $this->Session->write([
+            'safeUserData' => $safeUserData // password 以外のユーザー入力値
+        ]);
+
+        // バリデーション: メールアドレスのみ
+        if (!$this->validator->execute($safeUserData, 'login')) {
+            $validationErrors = $this->validator->getErrorMessages();
+            CakeLog::write(
+                'warning',
+                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                'Validation failed for the following reasons:' . "\n" .
+                print_r($validationErrors, true)
+            );
+            $this->Session->write([
+                'validationErrors' => $validationErrors
+            ]);
+            return $this->redirect('/login');
+        }
+
+        // 認証処理
+        $result = $this->AuthenticateService->authenticate($requestData['User']);
+        // 認証処理: 失敗
+        if (!$result['status']) {
+            CakeLog::write(
+                'info',
+                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                'User with email `'.$safeUserData['email'].'` faild to login.'
+            );
+            $this->Flash->error('パスワードまたはメールアドレスが違います。');
+            return $this->redirect('/login');
+        }
+
+        // 認証処理: 成功
+        $this->Session->delete('safeUserData');
+        $this->Session->delete('validationErrors');
+        $this->Login->login($result['authenticatedUserUid']);
+        $this->Flash->info('ログインしました。');
+        return $this->redirect('/home');
     }
-    return $this->redirect(['[method]' => 'GET', 'action' => 'displayForm']);
-  }
+
+
+    /**
+     * ログアウト
+     */
+    public function logout() {
+        CakeLog::write('info', '... ' . __CLASS__ . '#' . __FUNCTION__ . ' START ...');
+        $this->request->allowMethod('delete');
+
+        // ログアウトの共通処理
+        $this->Login->logout('/home');
+    }
 }

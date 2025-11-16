@@ -1,30 +1,50 @@
 <?php
 
 App::uses('Component', 'Controller');
+App::uses('CakeLog', 'Log');
+App::uses('InternalErrorException', 'Error');
 App::uses('PublicError', 'Lib/PublicError');
 
 class AuthorizeComponent extends Component {
-    public $components = ['Session', 'Flash' => ['className' => 'CustomizedFlash'], 'Authenticate'];
+    public $components = [
+        'Flash' => ['className' => 'CustomizedFlash'],
+        'Session',
+        'Login',
+    ];
+
     private $controller;
+
     public const DEFAULT_WHITE_LIST = [
         'public' => [
-            'users'           => ['register', 'confirm', 'complete'],
-            'authentications' => ['login', 'logout'],
-            'threads'         => ['home'],
-            'comments'        => [],
+            'users' => ['register', 'confirm', 'complete'],
+            'authentications' => ['login', 'auth'],
+            'threads' => ['home', 'show'],
+            'comments' => [],
         ],
         'loginUser' => [
-            'users'           => [],
-            'authentications' => [],
-            'threads'         => ['createThread', 'create'],
-            'comments'        => ['create'],
+            'users' => [],
+            'authentications' => ['logout'],
+            'threads' => ['register', 'confirm', 'complete'],
+            'comments' => ['complete'],
         ],
+        // 'owner' => [
+        //     'users' => [],
+        //     'authentications' => [],
+        //     'threads' => ['show', 'edit', 'update', 'delete'],
+        //     'comments' => ['edit', 'update'],
+        // ],
     ];
 
     private $defaultViolationRedirect = [
         'loginUser' => '/login',
-        'owner'     => '/home',
-        // 'admin'     => '', // 未運用
+        'owner' => '/home',
+        // 'admin' => '', // 未運用
+    ];
+
+    private $defaultViolationMessage = [
+        'loginUser' => 'ログインしてください。',
+        'owner' => 'アクセス権限がありません。',
+        // 'admin' => '', // 未運用
     ];
 
     public function __construct(ComponentCollection $collection, $settings = []) {
@@ -32,48 +52,62 @@ class AuthorizeComponent extends Component {
     }
 
     /**
-     * ライフサイクルの最初でコントローラーを捕捉
+     * ライフサイクルの最初でコントローラーを捕捉する。
      */
     public function initialize(Controller $controller) {
         $this->controller = $controller;
     }
 
-
     /**
      * 認可チェック。$requester として認可が降りるかを判定する。
+     *
      * @param string $requester 'public' | 'loginUser' | 'owner' | 'admin'
-     * @param array $payload 認可判定に必要な追加情報
+     * @param array $payload 認可判定に必要な追加情報（例: ['user_uid' => '...']）
+     * @return bool
      */
     public function isAuthorizedAs($requester, $payload = []) {
         switch ($requester) {
             case 'public':
                 return true;
             case 'loginUser':
-                return $this->Authenticate->isLoggedIn();
+                return $this->Login->isLoggedIn();
             case 'owner':
-                $loginUserUid = $this->Authenticate->getLoginUserValue('uid');
-                $requesterUid = $payload['user']['uid'];
-                return $loginUserUid === $requesterUid;
-            // case 'admin': // 未運用
+                if (!$this->Login->isLoggedIn()) {
+                    return false;
+                }
+                $payloadUserUid = null;
+                if (array_key_exists('user_uid', $payload)) {
+                    $payloadUserUid = $payload['user_uid'];
+                } elseif (array_key_exists('uid', $payload)) {
+                    $payloadUserUid = $payload['uid'];
+                }
+
+                if ($payloadUserUid === null) {
+                    return false;
+                }
+
+                $loginUserUid = $this->Login->getLoginUserValue('uid');
+                return $loginUserUid === $payloadUserUid;
             default:
                 return false;
         }
     }
 
     /**
-     * AppController::APP_WHITE_LIST または self::APP_WHITE_LIST から全体設定のホワイトリストを取得
-     * 
+     * AppController::APP_WHITE_LIST または self::DEFAULT_WHITE_LIST から全体設定のホワイトリストを取得。
+     *
      * @param Controller $controller
      * @return array
      */
-    private function getAppWhiteList($controller) {
-        // AppController::$appWhiteList > self::$appWhiteList の順位でホワイトリストを取得
+    private function getAppWhiteList(Controller $controller) {
         $appWhiteList = self::DEFAULT_WHITE_LIST;
+        $controllerClass = get_class($controller);
+        $whiteListConstant = $controllerClass . '::APP_WHITE_LIST';
 
-        if (defined(get_class($controller) . '::APP_WHITE_LIST')) {
-            $appWhiteList = constant(get_class($controller) . '::APP_WHITE_LIST');
-            if (is_null($appWhiteList) || !is_array($appWhiteList)) {
-                throw new Exception('AppController::$appWhiteList is invalid.');
+        if (defined($whiteListConstant)) {
+            $appWhiteList = constant($whiteListConstant);
+            if ($appWhiteList === null || !is_array($appWhiteList)) {
+                throw new InternalErrorException($whiteListConstant . ' is invalid.');
             }
         }
 
@@ -81,53 +115,56 @@ class AuthorizeComponent extends Component {
     }
 
     /**
-     * 全体設定のホワイトリストからコントローラー固有のホワイトリストを抽出
-     * 
+     * 全体設定のホワイトリストからコントローラー固有のホワイトリストを抽出。
+     *
      * @param array $appWhiteList
      * @param string $controllerName
      * @return array
      */
-    private function extractControllerWhiteList($appWhiteList, $controllerName) {
-        // 現在のコントローラー分のホワイトリスト抽出
+    private function extractControllerWhiteList(array $appWhiteList, $controllerName) {
         $result = [];
+
         foreach ($appWhiteList as $requester => $actions) {
-            // TODO: 要確認, 例外を投げるでいいか？、!isset(...) ではなく array_key_exists() の方が良いか？
-            if (!isset($actions[$controllerName])) {
-                // CakeErrorControllerなど、想定外の組み込みコントローラーの場合は false で抜ける
-                throw new Exception('Controller name not found in appWhiteList: ' . $controllerName);
+            if (!array_key_exists($controllerName, $actions)) {
+                $message = sprintf(
+                    'Controller name "%s" not found in appWhiteList for requester "%s".',
+                    $controllerName,
+                    $requester
+                );
+                throw new InternalErrorException($message);
             }
+
             $result[$requester] = array_values($actions[$controllerName]);
         }
+
         return $result;
     }
 
     /**
-     * 以下の優先順位でコントローラー固有のホワイトリストを取得
+     * 以下の優先順位でコントローラー固有のホワイトリストを取得。
      * 1. allow() の引数で渡されるコントローラーホワイトリスト
      * 2. AppController::APP_WHITE_LIST から取得されるコントローラーホワイトリスト
-     * 3. self::APP_WHITE_LIST から取得されるコントローラーホワイトリスト
-     * 
+     * 3. self::DEFAULT_WHITE_LIST から取得されるコントローラーホワイトリスト
+     *
      * @param array|null $controllerWhiteList
      * @param Controller $controller
      * @return array
      */
-    private function getControllerWhiteList($controllerWhiteList, $controller) {
-        $controllerName = strtolower($controller->name);
-        if (!is_null($controllerWhiteList)) {
-            // コントローラーから、コントローラー固有のホワイトリストが渡されていればそれを優先
+    private function getControllerWhiteList($controllerWhiteList, Controller $controller) {
+        if ($controllerWhiteList !== null) {
             return $controllerWhiteList;
-        } else {
-            // 全体設定のホワイトリストを取得
-            $appWhiteList = $this->getAppWhiteList($controller);
-            // 現在のコントローラー分のホワイトリスト抽出して返却
-            return $this->extractControllerWhiteList($appWhiteList, $controllerName);
         }
+
+        $controllerName = strtolower($controller->name);
+        $appWhiteList = $this->getAppWhiteList($controller);
+
+        return $this->extractControllerWhiteList($appWhiteList, $controllerName);
     }
 
     /**
-     * ホワイトリストに基づく認可チェックと処理
-     * 
-     * @param array|null $whiteList コントローラー固有のホワイトリスト。null の場合は AppController::APP_WHITE_LIST または self::APP_WHITE_LIST を使用。
+     * ホワイトリストに基づく認可チェックと処理。
+     *
+     * @param array|null $whiteList コントローラー固有のホワイトリスト。null の場合はデフォルト設定を使用。
      * @return void
      */
     public function allow($whiteList = null) {
@@ -137,23 +174,37 @@ class AuthorizeComponent extends Component {
 
         $matched = false;
         foreach ($whiteList as $requester => $actions) {
-            if (in_array($currentAction, $actions, true)) {
-                $matched = true;
-                // public のアクションに設定されていれば早期許可
-                if ($requester === 'public') {
-                    return;
-                }
-                // 認可不通過
-                if (!$this->isAuthorizedAs($requester)) {
-                    $this->Flash->error('アクセス権限がありません。');
-                    return $controller->redirect($this->defaultViolationRedirect[$requester]);
-                }
-                // 認可通過
+            if (!in_array($currentAction, $actions, true)) {
+                continue;
+            }
+
+            $matched = true;
+
+            if ($requester === 'public') {
                 return;
             }
+
+            if ($this->isAuthorizedAs($requester)) {
+                return;
+            }
+
+            CakeLog::write(
+                'warning',
+                sprintf(
+                    'Authorization as requester "%s" was not granted. action=%s payload=%s',
+                    $requester,
+                    $currentAction,
+                    print_r($this->Session->read(), true)
+                )
+            );
+
+            $this->Flash->error($this->defaultViolationMessage[$requester] ?? 'アクセス権限がありません。');
+
+            $redirect = $this->defaultViolationRedirect[$requester] ?? '/';
+            return $controller->redirect($redirect);
         }
 
-        // whiteListで未指定のアクションは現状 許可 扱いとする
+        // whiteListで未指定のアクションは現状 許可 扱い。
         if (!$matched) {
             return;
         }

@@ -1761,9 +1761,9 @@ class ModelValidationTest extends BaseModelTest {
 	public function testGetMethods() {
 		$this->loadFixtures('Article', 'Comment');
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$result = $Validator->getMethods();
+		$result = $validator->getMethods();
 
 		$expected = array_map('strtolower', get_class_methods('Article'));
 		$this->assertEquals($expected, array_keys($result));
@@ -1777,9 +1777,9 @@ class ModelValidationTest extends BaseModelTest {
 	public function testGetMethodsRefresh() {
 		$this->loadFixtures('Article', 'Comment');
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$result = $Validator->getMethods();
+		$result = $validator->getMethods();
 
 		$expected = array_map('strtolower', get_class_methods('Article'));
 		$this->assertEquals($expected, array_keys($result));
@@ -1792,10 +1792,10 @@ class ModelValidationTest extends BaseModelTest {
 			'fielddependencies',
 			'containmentsmap'
 		);
-		$this->assertEquals(array_merge($expected, $newList), array_keys($Validator->getMethods()));
+		$this->assertEquals(array_merge($expected, $newList), array_keys($validator->getMethods()));
 
 		$TestModel->Behaviors->unload('Containable');
-		$this->assertEquals($expected, array_keys($Validator->getMethods()));
+		$this->assertEquals($expected, array_keys($validator->getMethods()));
 	}
 
 /**
@@ -1806,12 +1806,12 @@ class ModelValidationTest extends BaseModelTest {
 	public function testSetValidationDomain() {
 		$this->loadFixtures('Article', 'Comment');
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$result = $Validator->setValidationDomain('default');
+		$result = $validator->setValidationDomain('default');
 		$this->assertEquals('default', $TestModel->validationDomain);
 
-		$result = $Validator->setValidationDomain('other');
+		$result = $validator->setValidationDomain('other');
 		$this->assertEquals('other', $TestModel->validationDomain);
 	}
 
@@ -1822,9 +1822,9 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testGetModel() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$result = $Validator->getModel();
+		$result = $validator->getModel();
 		$this->assertInstanceOf('Article', $result);
 	}
 
@@ -1835,21 +1835,21 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testArrayAccessGet() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$titleValidator = $Validator['title'];
+		$titleValidator = $validator['title'];
 		$this->assertEquals('title', $titleValidator->field);
 		$this->assertCount(1, $titleValidator->getRules());
 		$rule = current($titleValidator->getRules());
 		$this->assertEquals('notBlank', $rule->rule);
 
-		$titleValidator = $Validator['body'];
+		$titleValidator = $validator['body'];
 		$this->assertEquals('body', $titleValidator->field);
 		$this->assertCount(1, $titleValidator->getRules());
 		$rule = current($titleValidator->getRules());
 		$this->assertEquals('notBlank', $rule->rule);
 
-		$titleValidator = $Validator['user_id'];
+		$titleValidator = $validator['user_id'];
 		$this->assertEquals('user_id', $titleValidator->field);
 		$this->assertCount(1, $titleValidator->getRules());
 		$rule = current($titleValidator->getRules());
@@ -1863,12 +1863,12 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testArrayAccessExists() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$this->assertTrue(isset($Validator['title']));
-		$this->assertTrue(isset($Validator['body']));
-		$this->assertTrue(isset($Validator['user_id']));
-		$this->assertFalse(isset($Validator['other']));
+		$this->assertTrue(isset($validator['title']));
+		$this->assertTrue(isset($validator['body']));
+		$this->assertTrue(isset($validator['user_id']));
+		$this->assertFalse(isset($validator['other']));
 	}
 
 /**
@@ -1878,14 +1878,14 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testArrayAccessSet() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
 		$set = array(
 			'numeric' => array('rule' => 'numeric', 'allowEmpty' => false),
 			'between' => array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false),
 		);
-		$Validator['other'] = $set;
-		$rules = $Validator['other'];
+		$validator['other'] = $set;
+		$rules = $validator['other'];
 		$this->assertEquals('other', $rules->field);
 
 		$validators = $rules->getRules();
@@ -1893,8 +1893,8 @@ class ModelValidationTest extends BaseModelTest {
 		$this->assertEquals('numeric', $validators['numeric']->rule);
 		$this->assertEquals(array('lengthBetween', 1, 5), $validators['between']->rule);
 
-		$Validator['new'] = new CakeValidationSet('new', $set, array());
-		$rules = $Validator['new'];
+		$validator['new'] = new CakeValidationSet('new', $set, array());
+		$rules = $validator['new'];
 		$this->assertEquals('new', $rules->field);
 
 		$validators = $rules->getRules();
@@ -1910,11 +1910,11 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testArrayAccessUset() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$this->assertTrue(isset($Validator['title']));
-		unset($Validator['title']);
-		$this->assertFalse(isset($Validator['title']));
+		$this->assertTrue(isset($validator['title']));
+		unset($validator['title']);
+		$this->assertFalse(isset($validator['title']));
 	}
 
 /**
@@ -1924,10 +1924,10 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testIterator() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
 		$i = 0;
-		foreach ($Validator as $field => $rules) {
+		foreach ($validator as $field => $rules) {
 			if ($i === 0) {
 				$this->assertEquals('user_id', $field);
 			}
@@ -1950,20 +1950,20 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testCount() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
-		$this->assertCount(3, $Validator);
+		$validator = $TestModel->validator();
+		$this->assertCount(3, $validator);
 
 		$set = array(
 			'numeric' => array('rule' => 'numeric', 'allowEmpty' => false),
 			'range' => array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false),
 		);
-		$Validator['other'] = $set;
-		$this->assertCount(4, $Validator);
+		$validator['other'] = $set;
+		$this->assertCount(4, $validator);
 
-		unset($Validator['title']);
-		$this->assertCount(3, $Validator);
-		unset($Validator['body']);
-		$this->assertCount(2, $Validator);
+		unset($validator['title']);
+		$this->assertCount(3, $validator);
+		unset($validator['body']);
+		$this->assertCount(2, $validator);
 	}
 
 /**
@@ -1973,11 +1973,11 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testAddRule() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$Validator->add('other', 'numeric', array('rule' => 'numeric', 'allowEmpty' => false));
-		$Validator->add('other', 'between', array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false));
-		$rules = $Validator['other'];
+		$validator->add('other', 'numeric', array('rule' => 'numeric', 'allowEmpty' => false));
+		$validator->add('other', 'between', array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false));
+		$rules = $validator['other'];
 		$this->assertEquals('other', $rules->field);
 
 		$validators = $rules->getRules();
@@ -1993,23 +1993,23 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testRemoveRule() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$this->assertTrue(isset($Validator['title']));
-		$Validator->remove('title');
-		$this->assertFalse(isset($Validator['title']));
+		$this->assertTrue(isset($validator['title']));
+		$validator->remove('title');
+		$this->assertFalse(isset($validator['title']));
 
-		$Validator->add('other', 'numeric', array('rule' => 'numeric', 'allowEmpty' => false));
-		$Validator->add('other', 'between', array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false));
-		$this->assertTrue(isset($Validator['other']));
+		$validator->add('other', 'numeric', array('rule' => 'numeric', 'allowEmpty' => false));
+		$validator->add('other', 'between', array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false));
+		$this->assertTrue(isset($validator['other']));
 
-		$Validator->remove('other', 'numeric');
-		$this->assertTrue(isset($Validator['other']));
-		$this->assertFalse(isset($Validator['other']['numeric']));
-		$this->assertTrue(isset($Validator['other']['between']));
+		$validator->remove('other', 'numeric');
+		$this->assertTrue(isset($validator['other']));
+		$this->assertFalse(isset($validator['other']['numeric']));
+		$this->assertTrue(isset($validator['other']['between']));
 
-		$Validator->remove('other');
-		$Validator->remove('other', 'between');
+		$validator->remove('other');
+		$validator->remove('other', 'between');
 	}
 
 /**
@@ -2163,15 +2163,15 @@ class ModelValidationTest extends BaseModelTest {
 
 	public function testAddMultipleRules() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
 		$set = array(
 			'numeric' => array('rule' => 'numeric', 'allowEmpty' => false),
 			'between' => array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false),
 		);
 
-		$Validator->add('other', $set);
-		$rules = $Validator['other'];
+		$validator->add('other', $set);
+		$rules = $validator['other'];
 		$this->assertEquals('other', $rules->field);
 
 		$validators = $rules->getRules();
@@ -2184,8 +2184,8 @@ class ModelValidationTest extends BaseModelTest {
 			'b' => array('rule' => array('lengthBetween', 1, 5), 'allowEmpty' => false),
 		));
 
-		$Validator->add('other', $set);
-		$this->assertSame($set, $Validator->getField('other'));
+		$validator->add('other', $set);
+		$this->assertSame($set, $validator->getField('other'));
 	}
 
 /**
@@ -2195,9 +2195,9 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testValidator() {
 		$TestModel = new Article();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$result = $Validator->getField();
+		$result = $validator->getField();
 		$expected = array('user_id', 'title', 'body');
 		$this->assertEquals($expected, array_keys($result));
 		$this->assertTrue($result['user_id'] instanceof CakeValidationSet);
@@ -2213,14 +2213,14 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testValidatorOverride() {
 		$TestModel = new Article();
-		$ValidatorA = new ModelValidator($TestModel);
-		$ValidatorB = new ModelValidator($TestModel);
+		$validatorA = new ModelValidator($TestModel);
+		$validatorB = new ModelValidator($TestModel);
 
-		$TestModel->validator($ValidatorA);
-		$TestModel->validator($ValidatorB);
+		$TestModel->validator($validatorA);
+		$TestModel->validator($validatorB);
 
-		$this->assertSame($ValidatorB, $TestModel->validator());
-		$this->assertNotSame($ValidatorA, $TestModel->validator());
+		$this->assertSame($validatorB, $TestModel->validator());
+		$this->assertNotSame($validatorA, $TestModel->validator());
 	}
 
 /**
@@ -2295,19 +2295,19 @@ class ModelValidationTest extends BaseModelTest {
  */
 	public function testCustomMethodsWithCakeValidationSet() {
 		$TestModel = new TestValidate();
-		$Validator = $TestModel->validator();
+		$validator = $TestModel->validator();
 
-		$Validator->add('title', 'validateTitle', array(
+		$validator->add('title', 'validateTitle', array(
 			'rule' => 'validateTitle',
 			'message' => 'That aint right',
 		));
 		$data = array('title' => 'notatitle');
-		$result = $Validator->getField('title')->validate($data);
+		$result = $validator->getField('title')->validate($data);
 		$expected = array(0 => 'That aint right');
 		$this->assertEquals($expected, $result);
 
 		$data = array('title' => 'title-is-good');
-		$result = $Validator->getField('title')->validate($data);
+		$result = $validator->getField('title')->validate($data);
 		$expected = array();
 		$this->assertEquals($expected, $result);
 	}

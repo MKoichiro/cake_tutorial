@@ -1,89 +1,168 @@
-<?=
-  $this->element('debug', [
-    'arrays' => [
-      '$threadWithAuthorData'    => isset($threadWithAuthorData) ? $threadWithAuthorData : null,
-      '$commentsWithAuthorsData' => isset($commentsWithAuthorsData) ? $commentsWithAuthorsData : null,
-      '$inputCommentData'        => isset($inputCommentData) ? $inputCommentData : null,
-      '$validationErrors'        => isset($validationErrors) ? $validationErrors : null,
-    ],
-  ]);
-?>
+<?=  debug($this->viewVars); ?>
+<div class="view-container threads-show">
 
-<?php
-  $threadData = $threadWithAuthorData['threads'];
-  $authorData = $threadWithAuthorData['users'];
-?>
+    <section class="app-card-context app-card-item-highlight">
+        <div class="app-meta-list-container">
+            <?php if ($threadWithAuthorData['users']['user_id'] === $loginUserId): ?>
+                <div class="app-card-item-highlight-flag">
+                    <small class="app-card-flag-container">
+                        <span class="material-symbols-outlined">
+                            flag
+                        </span>
+                        <span>
+                            マイ投稿
+                        </span>
+                    </small>
+                </div>
+            <?php endif; ?>
+            <div class="app-card-content-container">
+                <h2 class="thread-title">
+                    <?= StringUtil::displayFormat($threadWithAuthorData['threads']['thread_title']); ?>
+                </h2>
 
-<div>
-  <div>
-    <h1>
-      <?= h($threadData['title']) ?>
-    </h1>
+                <p class="thread-description">
+                    <?php
+                        if ($threadWithAuthorData['threads']['thread_description'] === null
+                            || $threadWithAuthorData['threads']['thread_description'] === ''
+                        ) {
+                            echo '... スレッドの説明はありません。';
+                        } else {
+                            echo StringUtil::displayFormat($threadWithAuthorData['threads']['thread_description']);
+                        }
+                    ?>
+                </p>
+            </div>
 
-    <div>
-      <div>
-        <span>投稿者:</span>
-        <a href="#">
-          <?= h($authorData['display_name']) ?>
-        </a>
-      </div>
+            <footer class="app-meta-list">
+                <dl>
+                    <div>
+                        <dt>
+                            <span class="material-symbols-outlined">
+                                account_circle
+                            </span>
+                            <span>
+                                投稿者
+                            </span>
+                        </dt>
+                        <dd>
+                            <a class="underline-link" href="<?= $rootPath; ?>/users/<?= h($threadWithAuthorData['users']['user_uid']); ?>">
+                                <?= StringUtil::displayFormat($threadWithAuthorData['users']['display_name']); ?>
+                            </a>
+                        </dd>
+                    </div>
 
-      <div>
-        <span>作成日時:</span>
-        <small>
-          <time>
-            <?= h($threadData['created_datetime']) ?>
-          </time>
-        </small>
-      </div>
-    </div>
-  </div>
-
-  <p>
-    <?= h($threadData['description']) ?>
-  </p>
-</div>
-
-<div>
-  <div>
-    <?php if (empty($commentsData)): ?>
-      <p>コメントが見つかりません。</p>
-    <?php else: ?>
-      <ul>
-        <?php foreach ($commentsWithAuthorsData as $data): ?>
-          <li>
-            <strong><?= h($data['users']['display_name']); ?></strong>
-            <time><?= h($data['comments']['created_datetime']); ?></time>
-            <p><?= h($data['comments']['body']); ?></p>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-    <?php endif; ?>
-  </div>
-
-  <div class="comments form">
-    <form action="/cake_tutorial/threads/<?= h($threadData['uid']); ?>/createComment" id="CommentForm" method="post" accept-charset="utf-8">
-      <?= $this->element('Form/methodImplier', ['method' => 'post']); ?>
-
-      <fieldset>
-        <legend>Add Comment</legend>
-        <div class="input textarea">
-          <label for="CommentBody">Description</label>
-          <textarea
-            name="data[Comment][body]"
-            maxlength="5000"
-            rows="10"
-            id="CommentBody"
-          ><?= isset($inputCommentData['body']) ? h($inputCommentData['body']) : ''; ?></textarea>
-          <?php if (isset($validationErrors['body'])): ?>
-            <?= $this->element('Form/errorMessages', ['errorMessages' => $validationErrors['body']]); ?>
-          <?php endif; ?>
+                    <div>
+                        <dt>
+                            <span class="material-symbols-outlined">
+                                calendar_today
+                            </span>
+                            <span>
+                                投稿日時
+                            </span>
+                        </dt>
+                        <dd>
+                            <time datetime="<?= h($threadWithAuthorData['threads']['created_datetime']); ?>">
+                                <?= $threadWithAuthorData['threads']['created_datetime']; ?>
+                            </time>
+                        </dd>
+                    </div>
+                </dl>
+            </footer>
         </div>
-      </fieldset>
+    </section>
 
-      <div class="submit">
-        <input type="submit" value="Submit">
-      </div>
-    </form>
-  </div>
+    <hr class="app-separator" data-content="コメント">
+
+    <section class="app-card-context comments-container">
+        <?php if ($commentsWithAuthorData === []): ?>
+            <p class="app-card-item">まだ投稿がありません。</p>
+        <?php else: ?>
+            <ul class="app-card-container comments-list">
+                <?php foreach ($commentsWithAuthorData as $data): ?>
+                    <li class="app-card-item <?= $data['users']['user_id'] === $loginUserId ? 'highlight' : '' ?>">
+                        <div class="app-card-item-highlight-flag">
+                            <?php if ($data['users']['user_id'] === $loginUserId): ?>
+                                <small class="app-card-flag-container">
+                                    <span class="material-symbols-outlined">
+                                        flag
+                                    </span>
+                                    <span>
+                                        マイコメント
+                                    </span>
+                                </small>
+                            <?php endif; ?>
+                        </div>
+                        <div class="app-card-content-container">
+                            <p>
+                                <?= StringUtil::displayFormat($data['comments']['comment_body']); ?>
+                            </p>
+                        </div>
+                        <dl class="comment-meta-list">
+                            <?php if ($authorData['user_uid'] === $data['users']['user_uid']): ?>
+                                <span class="material-symbols-outlined">
+                                    admin_panel_settings
+                                </span>
+                            <?php endif; ?>
+                            <dt>
+                                <span class="material-symbols-outlined">
+                                    person
+                                </span>
+                            </dt>
+                            <dd>
+                                <a class="underline-link" href="<?= $rootPath; ?>/users/<?= h($data['users']['user_uid']); ?>">
+                                    <?= StringUtil::displayFormat($data['users']['display_name']); ?>
+                                </a>
+                            </dd>
+
+                            <dt>
+                                <span class="material-symbols-outlined">
+                                    history_toggle_off
+                                </span>
+                            </dt>
+                            <dd>
+                                <time datetime="<?= h($data['comments']['updated_datetime']); ?>">
+                                    <?= h($data['comments']['updated_datetime']); ?>
+                                </time>
+                            </dd>
+                        </dl>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </section>
+
+    <section>
+        <?php if (!$isAuthorizedAsLoginUser): ?>
+            <small>
+                コメントを投稿するには
+                <a class="app-btn" href="<?= $rootPath; ?>/login">ログイン</a>
+                または
+                <a class="app-btn" href="<?= $rootPath; ?>/users/register">新規登録</a>
+                してください。
+            </small>
+        <?php else: ?>
+            <div class="form-wrap">
+                <form id="commentForm" action="<?= $rootPath; ?>/threads/<?= h($threadData['thread_uid']); ?>/comments/complete" method="post" accept-charset="utf-8">
+                    <fieldset>
+                        <legend>コメントを投稿する</legend>
+                        <div class="input text required">
+                            <label for="commentBody">コメント内容</label>
+                            <div class="input-error">
+                                <textarea
+                                    name="data[Comment][comment_body]"
+                                    maxlength="5000"
+                                    rows="10"
+                                    id="commentBody"
+                                ><?= isset($requestedCommentData['Comment']['comment_body']) ? h($requestedCommentData['Comment']['comment_body']) : ''; ?></textarea>
+                                <?= $this->element('Form/errorMessages', ['errors' => $validationErrors, 'key' => 'comment_body']); ?>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <div class="submit">
+                        <button class="app-btn" type="submit">投稿</button>
+                    </div>
+                </form>
+            </div>
+        <?php endif; ?>
+    </section>
 </div>

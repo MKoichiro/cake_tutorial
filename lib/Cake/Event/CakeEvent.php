@@ -69,7 +69,7 @@ class CakeEvent {
  *
  * ```
  *	$event = new CakeEvent('Order.afterBuy', $this, array('buyer' => $userData));
- *	$event = new CakeEvent('User.afterRegister', $UserModel);
+ *	$event = new CakeEvent('User.afterRegister', $userModel);
  * ```
  */
 	public function __construct($name, $subject = null, $data = null) {

@@ -1,45 +1,45 @@
-<!-- <?=
-    $this->element('debug', [
-        'arrays' => [
-            '$loginUser' => isset($loginUser) ? $loginUser : null,
-        ],
-    ]);
-?> -->
-
-<div class="view-container user-complete">
+<div class="view-container users-complete">
     <p class="welcome-message">
-        <a href="#"><?= $loginUser['display_name'] ?></a>さん、掲示板アプリへようこそ！
+        <a class="underline-link" href="<?= $rootPath; ?>/users/<?= h($loginUserInfo['user_uid']); ?>">
+            <?= StringUtil::displayFormat($loginUserInfo['display_name']); ?>
+        </a>
+        さん、掲示板アプリへようこそ！
     </p>
-    
+
     <p>何からはじめますか？</p>
-    
+
     <nav>
         <ul>
             <li>
-                <a class="app-btn" href="#">
+                <a class="app-btn" href="<?= $rootPath; ?>/home">
                     <span class="material-symbols-outlined">
                         home
                     </span>
-                    サイトホームへ
+                    <span>
+                        サイトホームへ
+                    </span>
                 </a>
             </li>
             <li>
-                <a class="app-btn" href="#">
+                <a class="app-btn" href="<?= $rootPath; ?>/users/<?= h($loginUserInfo['user_uid']); ?>">
                     <span class="material-symbols-outlined">
                         account_circle
                     </span>
-                    マイページへ
+                    <span>
+                        マイページへ
+                    </span>
                 </a>
             </li>
             <li>
-                <a class="app-btn" href="#">
+                <a class="app-btn" href="<?= $rootPath; ?>/threads/register">
                     <span class="material-symbols-outlined">
                         post_add
                     </span>
-                    スレッドを立てる
+                    <span>
+                        スレッドを立てる
+                    </span>
                 </a>
             </li>
         </ul>
     </nav>
 </div>
-
