@@ -2,4 +2,4 @@
 
 App::uses('BaseModel', 'Model');
 
-class User extends BaseModel {}
+class CommentLikes extends BaseModel {}

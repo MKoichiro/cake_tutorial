@@ -1018,3 +1018,39 @@ h1.app-page-title {
 .comments-edit .app-meta-container {
     margin-top: auto;
 }
+
+/* .comment-like-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+}
+.favorite-button {
+
+} */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* 必要に応じて */
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+
+  /* ここが重要: outlined をデフォルトにする */
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,   /* 一部フォントで有効な全体の幅を変えずに太さを調整するもの */
+    'opsz' 14;  /* 一部フォントで有効な光学効果の強度. 公式のデフォルトを流用. */
+}
+
+/* いいね済み（filled）で表示したいときに付けるクラス */
+.material-symbols-outlined.is-liked {
+  font-variation-settings:
+    'FILL' 1;
+}

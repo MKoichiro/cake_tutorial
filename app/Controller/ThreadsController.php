@@ -336,12 +336,6 @@ class ThreadsController extends AppController {
         CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
 
-        CakeLog::write(
-            'debug',
-            __CLASS__ . '#' . __FUNCTION__ . ' -- session_id: ' . session_id()
-            . ', Auth.User: ' . print_r($this->Session->read('Auth.User'), true)
-        );
-
         // URL パラメーターから thread の uid を取得
         $threadUid = $this->request->params['thread_uid'];
         CakeLog::write(

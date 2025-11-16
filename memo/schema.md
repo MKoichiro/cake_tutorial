@@ -25,9 +25,9 @@ CREATE TABLE `users` (
   `password_hash`     CHAR(60),
 
   `created_by`        VARCHAR(36)   NOT NULL,
-  `created_datetime`  DATETIME      DEFAULT NOW(),
+  `created_datetime`  DATETIME      NOT NULL,
   `updated_by`        VARCHAR(36)   NOT NULL,
-  `updated_datetime`  DATETIME      DEFAULT NOW(),
+  `updated_datetime`  DATETIME      NOT NULL,
 
   PRIMARY KEY(`user_id`),
   CONSTRAINT uk_users_uid   UNIQUE (`uid`),
@@ -45,9 +45,9 @@ CREATE TABLE `threads` (
   `description`       VARCHAR(5000),
 
   `created_by`        VARCHAR(36)   NOT NULL,
-  `created_datetime`  DATETIME      DEFAULT NOW(),
+  `created_datetime`  DATETIME      NOT NULL,
   `updated_by`        VARCHAR(36)   NOT NULL,
-  `updated_datetime`  DATETIME      DEFAULT NOW(),
+  `updated_datetime`  DATETIME      NOT NULL,
 
   PRIMARY KEY(thread_id),
   CONSTRAINT fk_threads_user_id
@@ -104,9 +104,9 @@ CREATE TABLE `comments` (
   `body`              VARCHAR(5000) NOT NULL,
 
   `created_by`        VARCHAR(36)   NOT NULL,
-  `created_datetime`  DATETIME      DEFAULT NOW(),
+  `created_datetime`  DATETIME      NOT NULL,
   `updated_by`        VARCHAR(36)   NOT NULL,
-  `updated_datetime`  DATETIME      DEFAULT NOW(),
+  `updated_datetime`  DATETIME      NOT NULL,
 
   PRIMARY KEY(comment_id),
   CONSTRAINT fk_comments_user_id
@@ -117,5 +117,24 @@ CREATE TABLE `comments` (
     FOREIGN KEY (`thread_id`) REFERENCES `threads` (`thread_id`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
+);
+```
+
+```SQL
+CREATE TABLE `comment_likes` (
+    `comment_like_id`   INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id`           INT UNSIGNED NOT NULL,        -- users.id への FK
+    `comment_id`        INT UNSIGNED NOT NULL,        -- comments.id (または comment_id) への FK
+    `deleted`           TINYINT(1)   NOT NULL,
+    `created_by`        VARCHAR(36)  NOT NULL,
+    `created_datetime`  DATETIME     NOT NULL,
+    `updated_by`        VARCHAR(36)  NOT NULL,
+    `updated_datetime`  DATETIME     NOT NULL,
+    PRIMARY KEY (`comment_like_id`),
+    CONSTRAINT fk_comment_likes_user_id
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+    CONSTRAINT fk_comment_likes_comment_id
+        FOREIGN KEY (`comment_id`) REFERENCES `comments` (`comment_id`),
+    UNIQUE KEY `uk_comment_user` (`comment_id`, `user_id`) -- 同じユーザーが同じコメントに複数いいねできないように
 );
 ```

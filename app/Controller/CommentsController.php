@@ -237,4 +237,24 @@ class CommentsController extends AppController {
         $this->Flash->success('コメントを更新しました。');
         return $this->redirect('/users/'.$userData['user_uid']);
     }
+
+    public function toggleLike() {
+        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
+        $this->request->allowMethod('post');
+
+        $commentUid = $this->request->params['comment_uid'];
+        if (!$commentUid) {
+            throw new InternalErrorException();
+        }
+
+        $userUid = $this->Login->getLoginUserUid();
+
+        try {
+            $this->messageBoardService->toggleCommentLike($commentUid, $userUid);
+        } catch (Exception $e) {
+            throw new InternalErrorException();
+        }
+
+        return $this->redirect($this->referer());
+    }
 }

@@ -2,6 +2,7 @@
 
 App::uses('Thread', 'Model');
 App::uses('Comment', 'Model');
+App::uses('CommentLikes', 'Model');
 App::uses('User', 'Model');
 App::uses('StringUtil', 'Lib/Utility');
 App::uses('DatabaseUtil', 'Lib/Utility');
@@ -18,19 +19,23 @@ App::uses('Validator', 'Lib/Validation');
 
 class MessageBoardService {
 
-    /** @var Thread $ThreadModel */
-    private $ThreadModel;
+    /** @var Thread $threadModel */
+    private $threadModel;
 
-    /** @var Comment $CommentModel */
-    private $CommentModel;
+    /** @var Comment $commentModel */
+    private $commentModel;
+
+    /** @var CommentLikes $commentLikesModel */
+    private $commentLikesModel;
 
     /** @var Validator $validator */
     private $validator;
 
 
     public function __construct() {
-        $this->ThreadModel = new Thread();
-        $this->CommentModel = new Comment();
+        $this->threadModel = new Thread();
+        $this->commentModel = new Comment();
+        $this->commentLikesModel = new CommentLikes();
         $this->validator = new Validator();
     }
 
@@ -51,17 +56,17 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
         // SQL を実行
         try {
-            $result = $this->ThreadModel->executeSql($sql);
+            $result = $this->threadModel->executeSql($sql);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to fetch all threads data.'. "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -88,7 +93,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
@@ -98,11 +103,11 @@ class MessageBoardService {
 
         // SQL を実行
         try {
-            $result = $this->ThreadModel->executeSql($sql, $params);
+            $result = $this->threadModel->executeSql($sql, $params);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to fetch thread and user data for thread with UID `'.$threadUid.'`.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -113,7 +118,7 @@ class MessageBoardService {
         if (count($result) === 0) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Thread with UID `'.$threadUid.'` is not found.'
             );
             throw new Exception();
@@ -123,7 +128,7 @@ class MessageBoardService {
         if (count($result) >= 2) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Thread with UID `'.$threadUid.'` might be duplicated.'
             );
             throw new Exception();
@@ -146,7 +151,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
         $params = [
@@ -155,11 +160,11 @@ class MessageBoardService {
 
         // SQL を実行
         try {
-            $result = $this->ThreadModel->executeSql($sql, $params);
+            $result = $this->threadModel->executeSql($sql, $params);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to fetch thread_id for thread with UID `'.$threadUid.'`.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -170,7 +175,7 @@ class MessageBoardService {
         if (count($result) === 0) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Thread with UID `'.$threadUid.'` is not found.'
             );
             throw new Exception();
@@ -180,7 +185,7 @@ class MessageBoardService {
         if (count($result) >= 2) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Thread with UID `'.$threadUid.'` might be duplicated.'
             );
             throw new Exception();
@@ -206,7 +211,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
         $params = [
@@ -215,11 +220,11 @@ class MessageBoardService {
 
         // SQL を実行
         try {
-            $result = $this->CommentModel->executeSql($sql, $params);
+            $result = $this->commentModel->executeSql($sql, $params);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to fetch comments and users data for thread with ID `'.$threadId.'`.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -243,7 +248,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
@@ -253,11 +258,11 @@ class MessageBoardService {
 
         // SQL を実行
         try {
-            $result = $this->ThreadModel->executeSql($sql, $params);
+            $result = $this->threadModel->executeSql($sql, $params);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to fetch threads data for user with ID `'.$userId.'`.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -284,7 +289,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
@@ -294,11 +299,11 @@ class MessageBoardService {
 
         // SQL を実行
         try {
-            $result = $this->CommentModel->executeSql($sql, $params);
+            $result = $this->commentModel->executeSql($sql, $params);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to fetch comments and threads data for user with ID `'.$userId.'`.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -339,7 +344,7 @@ class MessageBoardService {
             $validationErrors = $this->validator->getErrorMessages();
             CakeLog::write(
                 'warning',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Validation for thread failed for the following reasons:' . "\n" .
                 print_r($validationErrors, true)
             );
@@ -352,7 +357,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
@@ -374,11 +379,11 @@ class MessageBoardService {
 
         // SQL を実行
         try {
-            $result = $this->ThreadModel->executeSql($sql, $params, $dataSource);
+            $result = $this->threadModel->executeSql($sql, $params, $dataSource);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to register thread.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -421,7 +426,7 @@ class MessageBoardService {
         if ($validationErrors = $this->validator->getErrorMessages()) {
             CakeLog::write(
                 'warning',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Validation for comment failed for the following reasons:' . "\n" .
                 print_r($validationErrors, true)
             );
@@ -434,7 +439,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
@@ -456,11 +461,11 @@ class MessageBoardService {
 
         // SQL を実行
         try {
-            $result = $this->CommentModel->executeSql($sql, $params, $dataSource);
+            $result = $this->commentModel->executeSql($sql, $params, $dataSource);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to register comment.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -497,7 +502,7 @@ class MessageBoardService {
         if ($validationErrors = $this->validator->getErrorMessages()) {
             CakeLog::write(
                 'warning',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Validation for thread failed for the following reasons:' . "\n" .
                 print_r($validationErrors, true)
             );
@@ -510,7 +515,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
@@ -526,12 +531,12 @@ class MessageBoardService {
         $dataSource = ConnectionManager::getDataSource('default');
         $dataSource->begin();
         try {
-            $result = $this->ThreadModel->executeSql($sql, $params);
+            $result = $this->threadModel->executeSql($sql, $params);
         } catch (Exception $e) {
             $dataSource->rollback();
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to update thread.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -567,7 +572,7 @@ class MessageBoardService {
         if ($validationErrors = $this->validator->getErrorMessages()) {
             CakeLog::write(
                 'warning',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Validation for thread failed for the following reasons:' . "\n" .
                 print_r($validationErrors, true)
             );
@@ -580,7 +585,7 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
 
@@ -595,12 +600,12 @@ class MessageBoardService {
         $dataSource = ConnectionManager::getDataSource('default');
         $dataSource->begin();
         try {
-            $result = $this->CommentModel->executeSql($sql, $params);
+            $result = $this->commentModel->executeSql($sql, $params);
         } catch (Exception $e) {
             $dataSource->rollback();
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to update comment.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -644,7 +649,7 @@ class MessageBoardService {
         $result['threadsWithUsersData'] = $threadsWithUsersData;
         CakeLog::write(
             'debug',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Successfully fetch the following data for ThreadsController#home:' . "\n" .
             print_r($result, true)
         );
@@ -752,7 +757,7 @@ class MessageBoardService {
         $result['threadUid'] = $threadUid;
         CakeLog::write(
             'debug',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Successfully registered the thread with UID: `'.$threadUid.'`.'
         );
 
@@ -787,7 +792,7 @@ class MessageBoardService {
             if (($threadWithAuthorData = $this->fetchThreadDataByUid($threadUid)) === []) {
                 CakeLog::write(
                     'error',
-                    '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                    '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                     'Thread with UID `'.$threadUid.'` is not found.'
                 );
                 return $result;
@@ -804,7 +809,7 @@ class MessageBoardService {
         $result['commentsWithAuthorData'] = $commentsWithAuthorData;
         CakeLog::write(
             'debug',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Successfully fetch the following data for ThreadsController#show:' . "\n" .
             print_r($result, true)
         );
@@ -865,7 +870,7 @@ class MessageBoardService {
 
         CakeLog::write(
             'debug',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Successfully registered the comment with UID: `'.$commentUid.'`.'
         );
 
@@ -885,18 +890,18 @@ class MessageBoardService {
         $sql = constant('MessageBoardQueries::'.$sqlKey);
         CakeLog::write(
             'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
             'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
         );
         $params = [ 'comment_uid' => $commentUid ];
 
         // SQL を実行
         try {
-            $result = $this->CommentModel->executeSql($sql, $params);
+            $result = $this->commentModel->executeSql($sql, $params);
         } catch (Exception $e) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Failed to fetch comment and associated data for comment with UID `'.$commentUid.'`.' . "\n" .
                 'The following error occurred: '."\n". $e->getMessage()
             );
@@ -910,7 +915,7 @@ class MessageBoardService {
         if (count($result) >= 2) {
             CakeLog::write(
                 'error',
-                '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
                 'Comment UID `'.$commentUid.'` might be duplicated.'
             );
             throw new Exception();
@@ -918,4 +923,375 @@ class MessageBoardService {
 
         return $result === [] ? $result : $result[0];
     }
+
+    /**
+     * comment_uid を comment_id に変換するヘルパー
+     * @param string $commentUid
+     * @return int comment_id
+     * @throws Exception
+     */
+    private function fetchCommentIdByUid($commentUid) {
+        // SQL 文とパラメーターを準備
+        $sqlKey = 'SELECT_COMMENT_ID_BY_UID';
+        $sql = constant('MessageBoardQueries::'.$sqlKey);
+        CakeLog::write(
+            'info',
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
+        );
+        $params = [
+            'comment_uid' => $commentUid
+        ];
+
+        // SQL を実行
+        try {
+            $result = $this->commentModel->executeSql($sql, $params);
+        } catch (Exception $e) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Failed to fetch comment_id for comment with UID `'.$commentUid.'`.' . "\n" .
+                'The following error occurred: '."\n". $e->getMessage()
+            );
+            throw $e;
+        }
+        $count = count($result);
+
+        // スレッドが見つからない
+        if ($count === 0) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Comment with UID `'.$commentUid.'` is not found.'
+            );
+            throw new Exception();
+        }
+
+        // スレッドが重複
+        if ($count >= 2) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Comment with UID `'.$commentUid.'` might be duplicated.'
+            );
+            throw new Exception();
+        }
+
+        return $result[0]['comments']['comment_id'];
+    }
+
+    /**
+     * コメントのいいね機能で使用する user_id 解決ロジック
+     */
+    private function userIdResolver($userUid, $optionalParams) {
+        $userId = isset($optionalParams['user_id']) ? $optionalParams['user_id'] : null;
+        if ($userId !== null) {
+            return $userId;
+        }
+
+        // users.uid で検索して users.user_id を取得
+        $userService = new UserService();
+        $result = $userService->getUserValuesByUid($userUid, 'user_id');
+        if ($result === []) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'User with UID `'.$userUid.'` is not found.'
+            );
+            throw new Exception();
+        }
+
+        return $result['user_id'];
+    }
+
+    /**
+     * 1 件のコメントいいねを登録
+     *
+     * @param int $commentId
+     * @param string $createdBy
+     * @param array{
+     *      user_id?:               int,
+     *      comment_likes_deleted?: bool|int(0|1),
+     *      created_datetime?:      string,
+     *      updated_datetime?:      string,
+     * } $optionalParams
+     *
+     * @return bool true: 成功, false: 失敗
+     * @throws Exception
+     */
+    public function registerCommentLike($commentId, $createdBy, $optionalParams = []) {
+
+        $deleted = isset($optionalParams['comment_likes_deleted']) ? $optionalParams['comment_likes_deleted'] : 0;
+        if (is_bool($deleted)) {
+            $deleted = (int) $deleted;
+        }
+        if ($deleted !== 0 && $deleted !== 1) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'The value of comment_likes_deleted is invalid. It must be boolean or 0/1 integer.'
+            );
+            throw new Exception();
+        }
+
+        $userId = $this->userIdResolver($createdBy, $optionalParams);
+        
+        $currentDatetime = date('Y-m-d H:i:s');
+        $params = [
+            'comment_id'            => (int) $commentId,
+            'user_id'               => (int) $userId,
+            'comment_likes_deleted' => (int) $deleted,
+            'created_by'            => $createdBy,
+            'created_datetime'      => isset($optionalParams['created_datetime'])
+                ? $optionalParams['created_datetime']
+                : $currentDatetime,
+            'updated_by'            => $createdBy,
+            'updated_datetime'      => isset($optionalParams['updated_datetime'])
+                ? $optionalParams['updated_datetime']
+                : $currentDatetime,
+        ];
+
+        try {
+            // SQL 文とパラメーターを準備
+            $sqlKey = 'INSERT_COMMENT_LIKE';
+            $sql = constant('MessageBoardQueries::'.$sqlKey);
+            CakeLog::write(
+                'info',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
+            );
+
+            // SQL を実行
+            $result = $this->commentLikesModel->executeSql($sql, $params);
+        } catch (Exception $e) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Failed to register comment like.' . "\n" .
+                'The following error occurred: '."\n". $e->getMessage()
+            );
+            throw $e;
+        }
+
+        return $result === [] || $result === true ? true : false;
+    }
+
+    /**
+     * 指定の comment_id と user_id に紐づく comment_likes レコードを1件取得
+     *
+     * 見つからない場合は空配列 [] を返す。
+     *
+     * @param int $commentId
+     * @param int $userId
+     * @return array コメントいいね1件分の配列 or 空配列
+     * @throws Exception
+     */
+    public function fetchCommentLikeByIds($commentId, $userId) {
+        // SQL 文とパラメーターを準備
+        $sqlKey = 'SELECT_COMMENT_LIKE_BY_IDS';
+        $sql = constant('MessageBoardQueries::'.$sqlKey);
+        CakeLog::write(
+            'info',
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
+        );
+        $params = [
+            'comment_id' => (int) $commentId,
+            'user_id'    => (int) $userId,
+        ];
+
+        // SQL を実行
+        try {
+            $result = $this->commentLikesModel->executeSql($sql, $params);
+        } catch (Exception $e) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Failed to fetch comment like for comment ID `'.$commentId.'` and user ID `'.$userId.'`.' . "\n" .
+                'The following error occurred: '."\n". $e->getMessage()
+            );
+            throw $e;
+        }
+
+        $count = count($result);
+
+        // 未登録
+        if ($count === 0) {
+            return [];
+        }
+
+        if ($count > 1) {
+            // UNIQUE(comment_id, user_id) 想定なので、2件以上は異常
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Comment like for comment ID `'.$commentId.'` and user ID `'.$userId.'` might be duplicated.'
+            );
+            throw new Exception();
+        }
+
+        // 1件だけのはず
+        return $result[0]['comment_likes'];
+    }
+
+    /**
+     * (更新) 既存のcomment_likesテーブルのレコードをいいね
+     */
+    public function likeComment($commentId, $updatedBy, $optionalParams = []) {
+        // SQL 文とパラメーターを準備
+        $sqlKey = 'UPDATE_COMMENT_TO_LIKE';
+        $sql = constant('MessageBoardQueries::'.$sqlKey);
+        CakeLog::write(
+            'info',
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
+        );
+
+        $userId = $this->userIdResolver($updatedBy, $optionalParams);
+
+        $params = [
+            'comment_id'        => (int) $commentId,
+            'user_id'           => (int) $userId,
+            'updated_by'        => $updatedBy,
+            'updated_datetime'  => isset($optionalParams['updated_datetime'])
+                ? $optionalParams['updated_datetime']
+                : date('Y-m-d H:i:s'),
+        ];
+
+        // SQL を実行
+        try {
+            $result = $this->commentLikesModel->executeSql($sql, $params);
+        } catch (Exception $e) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Failed to like comment.' . "\n" .
+                'The following error occurred: '."\n". $e->getMessage()
+            );
+            throw $e;
+        }
+
+        return $result === [] || $result === true ? true : false;
+    }
+
+    /**
+     * (更新) 既存のcomment_likesテーブルのレコードをいいね解除
+     */
+    public function unlikeComment($commentId, $updatedBy, $optionalParams = []) {
+        // SQL 文とパラメーターを準備
+        $sqlKey = 'UPDATE_COMMENT_TO_UNLIKE';
+        $sql = constant('MessageBoardQueries::'.$sqlKey);
+        CakeLog::write(
+            'info',
+            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
+        );
+
+        $userId = $this->userIdResolver($updatedBy, $optionalParams);
+
+        $params = [
+            'comment_id'        => (int) $commentId,
+            'user_id'           => (int) $userId,
+            'updated_by'        => $updatedBy,
+            'updated_datetime'  => isset($optionalParams['updated_datetime'])
+                ? $optionalParams['updated_datetime']
+                : date('Y-m-d H:i:s'),
+        ];
+
+        // SQL を実行
+        try {
+            $result = $this->commentLikesModel->executeSql($sql, $params);
+        } catch (Exception $e) {
+            CakeLog::write(
+                'error',
+                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+                'Failed to unlike comment.' . "\n" .
+                'The following error occurred: '."\n". $e->getMessage()
+            );
+            throw $e;
+        }
+
+        return $result === [] || $result === true ? true : false;
+    }
+
+    /**
+     * コントローラーからの呼び出し用
+     */
+    public function toggleCommentLike($commentUid, $userUid) {
+        // comments.uid で検索して comments.comment_id を取得
+        try {
+            $commentId = $this->fetchCommentIdByUid($commentUid);
+        } catch (Exception $e) {
+            return false;
+        }
+
+        // users.uid で検索して users.user_id を取得
+        $userService = new UserService();
+        $userIdResult = $userService->getUserValuesByUid($userUid, 'user_id');
+        if ($userIdResult === []) {
+            return false;
+        }
+
+        // レコードを取得
+        $userId = $userIdResult['user_id'];
+        $existingRecord = $this->fetchCommentLikeByIds($commentId, $userId);
+
+        // レコードが存在しない場合はいいねとして新規登録
+        if ($existingRecord === []) {
+            // user_id は取得済みなので、渡しておくと内部で再度解決しなくて済む
+            $this->registerCommentLike($commentId, $userUid, ['user_id' => $userId]);
+            return true;
+        }
+
+        // レコードが存在する場合はトグル更新
+        if ($existingRecord['comment_likes_deleted'] == 0) {
+            // いいね解除
+            // user_id は取得済みなので、渡しておくと内部で再度解決しなくて済む
+            $this->unlikeComment($commentId, $userUid, ['user_id' => $userId]);
+        } else {
+            // いいね
+            // user_id は取得済みなので、渡しておくと内部で再度解決しなくて済む
+            $this->likeComment($commentId, $userUid, ['user_id' => $userId]);
+        }
+
+        return true;
+    }
+
+    /**
+     * コメントのいいね数を取得
+     */
+    // public function countCommentLikes($commentUid) {
+    //     $result = [
+    //         'status'    => false,
+    //         'count'     => 0,
+    //     ];
+    //     // SQL 文とパラメーターを準備
+    //     $sqlKey = 'COUNT_COMMENT_LIKES_BY_COMMENTUID';
+    //     $sql = constant('MessageBoardQueries::'.$sqlKey);
+    //     CakeLog::write(
+    //         'info',
+    //         '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+    //         'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
+    //     );
+    //     $params = [
+    //         'comment_uid' => $commentUid,
+    //     ];
+
+    //     // SQL を実行
+    //     try {
+    //         $result = $this->commentLikesModel->executeSql($sql, $params);
+    //     } catch (Exception $e) {
+    //         CakeLog::write(
+    //             'error',
+    //             '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
+    //             'Failed to count comment likes for comment with UID `'.$commentUid.'`.'."\n".
+    //             'The following error occurred: '."\n". $e->getMessage()
+    //         );
+    //         return $result;
+    //     }
+
+    //     $result['status']   = true;
+    //     $result['count']    = (int) $result[0][0]['count'];
+    //     return $result;
+    // }
 }

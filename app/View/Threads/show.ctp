@@ -126,6 +126,16 @@
                                 </time>
                             </dd>
                         </dl>
+                        <div class="comment-like-container">
+                            <button class="favorite-button">
+                                <span class="material-symbols-outlined is-liked">
+                                    favorite
+                                </span>
+                            </button>
+                            <span>
+                                <?= h($data[0]['comment_like_count']); ?>
+                            </span>
+                        </div>
                     </li>
                 <?php endforeach; ?>
             </ul>

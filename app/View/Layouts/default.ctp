@@ -27,7 +27,8 @@ $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version())
     <link href="<?= $rootPath; ?>/favicon.ico" type="image/x-icon" rel="icon">
     <link href="<?= $rootPath; ?>/favicon.ico" type="image/x-icon" rel="shortcut icon">
     <link rel="stylesheet" type="text/css" href="<?= $rootPath; ?>/css/custom.css">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <!-- material symbol から icon 類を可変フォントでインポート -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
     <script type="module" src="<?= $rootPath ?>/js/main.js"></script>
     <?= $this->Html->script(str_replace('text/javascript', 'module', $scripts_for_layout)); ?>
 </head>

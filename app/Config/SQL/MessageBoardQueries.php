@@ -260,6 +260,27 @@ class MessageBoardQueries {
         comments.uid = :comment_uid
     SQL;
 
+    // public const SELECT_COMMENTS_WITH_USERS_BY_THREADID = <<<SQL
+    // SELECT
+    //     comments.uid AS comment_uid,
+    //     comments.user_id,
+    //     comments.body AS comment_body,
+    //     comments.created_datetime,
+    //     comments.updated_datetime,
+    //     users.user_id,
+    //     users.uid AS user_uid,
+    //     users.display_name
+    // FROM
+    //     comments
+    // INNER JOIN users
+    //     ON comments.user_id = users.user_id
+    // WHERE
+    //     comments.thread_id = :thread_id
+    // ORDER BY
+    //     comments.created_datetime ASC,
+    //     comments.comment_id ASC
+    // SQL;
+
     public const SELECT_COMMENTS_WITH_USERS_BY_THREADID = <<<SQL
     SELECT
         comments.uid AS comment_uid,
@@ -267,6 +288,7 @@ class MessageBoardQueries {
         comments.body AS comment_body,
         comments.created_datetime,
         comments.updated_datetime,
+        COUNT(comment_likes.comment_like_id) AS comment_like_count,
         users.user_id,
         users.uid AS user_uid,
         users.display_name
@@ -274,8 +296,13 @@ class MessageBoardQueries {
         comments
     INNER JOIN users
         ON comments.user_id = users.user_id
+    LEFT JOIN comment_likes -- いいね 0 件のコメントが落ちないように LEFT JOIN
+        ON comments.comment_id = comment_likes.comment_id
+        AND comment_likes.deleted = 0
     WHERE
         comments.thread_id = :thread_id
+    GROUP BY
+        comments.comment_id
     ORDER BY
         comments.created_datetime ASC,
         comments.comment_id ASC
@@ -308,5 +335,87 @@ class MessageBoardQueries {
         users
     WHERE
         email = :email
+    SQL;
+
+    public const SELECT_COMMENT_ID_BY_UID = <<<SQL
+    SELECT
+        comment_id
+    FROM
+        comments
+    WHERE
+        uid = :comment_uid
+    SQL;
+
+    public const INSERT_COMMENT_LIKE = <<<SQL
+    INSERT INTO comment_likes (
+        comment_id,
+        user_id,
+        deleted,
+        created_by,
+        created_datetime,
+        updated_by,
+        updated_datetime
+    ) VALUES (
+        :comment_id,
+        :user_id,
+        :comment_likes_deleted,
+        :created_by,
+        STR_TO_DATE(:created_datetime, '%Y-%m-%d %H:%i:%s'),
+        :updated_by,
+        STR_TO_DATE(:updated_datetime, '%Y-%m-%d %H:%i:%s')
+    )
+    SQL;
+
+    public const SELECT_COMMENT_LIKE_BY_IDS = <<<SQL
+    SELECT
+        comment_like_id,
+        comment_id,
+        user_id,
+        deleted AS comment_likes_deleted,
+        created_by,
+        created_datetime,
+        updated_by,
+        updated_datetime
+    FROM
+        comment_likes
+    WHERE
+        comment_id = :comment_id
+        AND user_id = :user_id
+    SQL;
+
+    public const UPDATE_COMMENT_TO_LIKE = <<<SQL
+    UPDATE
+        comment_likes
+    SET
+        deleted          = 0,
+        updated_by       = :updated_by,
+        updated_datetime = STR_TO_DATE(:updated_datetime, '%Y-%m-%d %H:%i:%s')
+    WHERE
+        comment_id = :comment_id
+        AND user_id = :user_id
+    SQL;
+
+    public const UPDATE_COMMENT_TO_UNLIKE = <<<SQL
+    UPDATE
+        comment_likes
+    SET
+        deleted          = 1,
+        updated_by       = :updated_by,
+        updated_datetime = STR_TO_DATE(:updated_datetime, '%Y-%m-%d %H:%i:%s')
+    WHERE
+        comment_id = :comment_id
+        AND user_id = :user_id
+    SQL;
+
+    public const COUNT_COMMENT_LIKES_BY_COMMENTUID = <<<SQL
+    SELECT
+        COUNT(*) AS count
+    FROM
+        comment_likes
+    INNER JOIN comments
+        ON comment_likes.comment_id = comments.comment_id
+    WHERE
+        comments.uid = :comment_uid
+        AND comment_likes.deleted = 0
     SQL;
 }
