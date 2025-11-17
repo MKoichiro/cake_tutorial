@@ -308,12 +308,62 @@ class MessageBoardQueries {
         comments.comment_id ASC
     SQL;
 
+    // public const SELECT_COMMENTS_WITH_USERS_BY_THREADID = <<<SQL
+    //     SELECT
+    //         comments.uid              AS comment_uid,
+    //         comments.user_id,
+    //         comments.body             AS comment_body,
+    //         comments.created_datetime,
+    //         comments.updated_datetime,
+    //         COALESCE(cl_count.comment_like_count, 0) AS comment_like_count, -- nullの場合は0に変換
+    //         CASE
+    //             WHEN cl_user.comment_like_id IS NULL THEN 0
+    //             ELSE 1
+    //         END AS is_liked_by_login_user,
+    //         users.user_id,
+    //         users.uid               AS user_uid,
+    //         users.display_name
+    //     FROM
+    //         comments
+    //     INNER JOIN users
+    //         ON comments.user_id = users.user_id
+    //     -- いいね数をコメントごと集計してから LEFT JOIN
+    //     LEFT JOIN (
+    //         SELECT
+    //             comment_id,
+    //             COUNT(*) AS comment_like_count
+    //         FROM
+    //             comment_likes
+    //         WHERE
+    //             deleted = 0
+    //         GROUP BY
+    //             comment_id
+    //     ) AS cl_count
+    //         ON cl_count.comment_id = comments.comment_id
+    //     -- ログインユーザーのいいね状態を判定するための LEFT JOIN
+    //     LEFT JOIN comment_likes AS cl_user
+    //         ON cl_user.comment_id = comments.comment_id
+    //         AND cl_user.user_id   = :login_user_id
+    //         AND cl_user.deleted   = 0
+    //     WHERE
+    //         comments.thread_id = :thread_id
+    //     ORDER BY
+    //         comments.created_datetime ASC,
+    //         comments.comment_id ASC
+    //     SQL;
+
+
     public const SELECT_COMMENTS_WITH_THREADS_BY_USERID = <<<SQL
     SELECT
         comments.uid AS comment_uid,
         comments.body AS comment_body,
         comments.created_datetime,
         comments.updated_datetime,
+        COALESCE(cl_count.comment_like_count, 0) AS comment_like_count, -- nullの場合は0に変換
+        CASE
+            WHEN cl_user.comment_like_id IS NULL THEN 0
+            ELSE 1
+        END AS is_liked_by_login_user,
         threads.uid AS thread_uid,
         threads.title AS thread_title,
         threads.description AS thread_description
@@ -321,6 +371,22 @@ class MessageBoardQueries {
         comments
     INNER JOIN threads
         ON comments.thread_id = threads.thread_id
+    LEFT JOIN (
+        SELECT
+            comment_id,
+            COUNT(*) AS comment_like_count
+        FROM
+            comment_likes
+        WHERE
+            deleted = 0
+        GROUP BY
+            comment_id
+    ) AS cl_count
+        ON cl_count.comment_id = comments.comment_id
+    LEFT JOIN comment_likes AS cl_user
+        ON cl_user.comment_id = comments.comment_id
+        AND cl_user.user_id   = :login_user_id
+        AND cl_user.deleted   = 0
     WHERE
         comments.user_id = :user_id
     ORDER BY

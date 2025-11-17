@@ -45,6 +45,11 @@ class AppController extends Controller {
     //     $this->set('csrfToken', $token);
     // }
 
+    protected function renderError($statusCode) {
+        $this->response->statusCode($statusCode);               // ステータスを明示
+        return $this->render('/Errors/error' . $statusCode);    // error400.ctp をレンダ
+    }
+
     // 各アクション直前の処理
     public function beforeFilter() {
         parent::beforeFilter();

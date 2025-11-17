@@ -3,6 +3,7 @@
 App::uses('AppController', 'Controller');
 App::uses('MessageBoardService', 'Service');
 App::uses('Validator', 'Lib/Validation');
+App::uses('Logger', 'Lib/Logger');
 
 class ThreadsController extends AppController {
 
@@ -23,6 +24,11 @@ class ThreadsController extends AppController {
     public function home() {
         CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
         $this->request->allowMethod('get');
+
+        // $this->response->statusCode(400);          // ステータスを明示
+        // // $this->viewPath = 'Errors';                // /app/View/Errors 配下を見る
+        // return $this->render('/Errors/error404');          // error400.ctp をレンダ
+        return $this->renderError(404);
 
         // スレッド全件取得
         $result = $this->messageBoardService->getHomeContents();
@@ -79,12 +85,7 @@ class ThreadsController extends AppController {
 
         // POST データを取得
         $requestData = $this->request->data;
-        CakeLog::write(
-            'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
-            'User-submitted data:'."\n".
-            print_r($requestData, true)
-        );
+        Logger::postData($requestData, __CLASS__, __FUNCTION__);
 
         // データ構造のチェック
         if (
@@ -92,7 +93,7 @@ class ThreadsController extends AppController {
             (!isset($requestData['Thread']['thread_description'])) ||
             (!isset($requestData['Comment']['comment_body']))
         ) {
-            CakeLog::write('error', 'Invalid Request Data is given.');
+            Logger::invalidRequestData(__CLASS__, __FUNCTION__);
             throw new BadRequestException();
         }
 
@@ -129,17 +130,12 @@ class ThreadsController extends AppController {
      * スレッド作成
      */
     public function complete() {
-        CakeLog::write('info', '******************** ' . __CLASS__ . '#' . __FUNCTION__ . ' START ********************');
+        Logger::startAction(__CLASS__, __FUNCTION__);
         $this->request->allowMethod('post');
 
         // セッションからスレッドとコメントのデータを取得
         $requestData = $this->Session->read('requestData');
-        CakeLog::write(
-            'info',
-            '...' . __CLASS__ . '#' . __FUNCTION__ . '...' . "\n" .
-            'Read session to get user-submitted thread data and comment data:'."\n".
-            print_r($requestData, true)
-        );
+        Logger::sessionValue($requestData, __CLASS__, __FUNCTION__);
 
         // データ構造をチェック
         if (
@@ -147,7 +143,7 @@ class ThreadsController extends AppController {
             (!isset($requestData['Thread']['thread_description'])) ||
             (!isset($requestData['Comment']['comment_body']))
         ) {
-            CakeLog::write('error', 'Invalid Request Data is given.');
+            Logger::invalidRequestData(__CLASS__, __FUNCTION__);
             throw new BadRequestException();
         }
 

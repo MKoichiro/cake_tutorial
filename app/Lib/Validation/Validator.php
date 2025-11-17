@@ -186,6 +186,13 @@ class Validator {
         }
         $this->setErrorMessages($rawData, $configKey, $mode);
         $isValid = $this->getErrorMessages() === [];
+        if (!$isValid) {
+            CakeLog::write(
+                'warning',
+                'Validation failed for the following reasons:' . "\n" .
+                print_r($this->getErrorMessages(), true)
+            );
+        }
         return $isValid;
     }
 }

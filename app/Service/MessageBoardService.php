@@ -8,6 +8,7 @@ App::uses('StringUtil', 'Lib/Utility');
 App::uses('DatabaseUtil', 'Lib/Utility');
 App::uses('MessageBoardQueries', 'Config/Sql');
 App::uses('Validator', 'Lib/Validation');
+App::uses('Logger', 'Lib/Logger');
 
 // NOTE:
 // ・・・ executeSql()でSQLを実際に実行するモデルの変数に)を走行する関数では、 例外は握りつぶさずそのままスロー。ログは残す。
@@ -54,11 +55,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_THREADS_WITH_USERS';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         // SQL を実行
         try {
@@ -91,11 +88,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_THREAD_WITH_USER_BY_UID';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $params = [
             'thread_uid' => $threadUid
@@ -149,11 +142,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_THREAD_ID_BY_UID';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
         $params = [
             'thread_uid' => $threadUid
         ];
@@ -162,32 +151,19 @@ class MessageBoardService {
         try {
             $result = $this->threadModel->executeSql($sql, $params);
         } catch (Exception $e) {
-            CakeLog::write(
-                'error',
-                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-                'Failed to fetch thread_id for thread with UID `'.$threadUid.'`.' . "\n" .
-                'The following error occurred: '."\n". $e->getMessage()
-            );
+            Logger::dbFailure($params, $e->getMessage(), __CLASS__, __FUNCTION__);
             throw $e;
         }
 
         // スレッドが見つからない
         if (count($result) === 0) {
-            CakeLog::write(
-                'error',
-                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-                'Thread with UID `'.$threadUid.'` is not found.'
-            );
+            Logger::notFound('Thread', 'uid', $threadUid, __CLASS__, __FUNCTION__);
             throw new Exception();
         }
 
         // スレッドが重複
         if (count($result) >= 2) {
-            CakeLog::write(
-                'error',
-                '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-                'Thread with UID `'.$threadUid.'` might be duplicated.'
-            );
+            Logger::duplicate('Thread', 'uid', $threadUid, __CLASS__, __FUNCTION__);
             throw new Exception();
         }
 
@@ -209,11 +185,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_COMMENTS_WITH_USERS_BY_THREADID';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
         $params = [
             'thread_id' => (int) $threadId
         ];
@@ -246,11 +218,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_THREADS_BY_USERID';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $params = [
             'user_id' => (int) $userId
@@ -287,11 +255,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_COMMENTS_WITH_THREADS_BY_USERID';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $params = [
             'user_id' => (int) $userId
@@ -355,11 +319,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'INSERT_THREAD';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $threadUid = $threadUid === null ? StringUtil::generateUuid() : $threadUid;
         $currentDatetime = date('Y-m-d H:i:s');
@@ -437,11 +397,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'INSERT_COMMENT';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $commentUid = $commentUid === null ? StringUtil::generateUuid() : $commentUid;
         $currentDatetime = date('Y-m-d H:i:s');
@@ -513,11 +469,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'UPDATE_THREAD_CORE';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $params = [
             'target_thread_uid' => $targetThreadUid,
@@ -583,11 +535,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'UPDATE_COMMENT_CORE';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $params = [
             'target_comment_uid' => $targetCommentUid,
@@ -888,11 +836,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_COMMENT_BY_UID';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
         $params = [ 'comment_uid' => $commentUid ];
 
         // SQL を実行
@@ -934,11 +878,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_COMMENT_ID_BY_UID';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
         $params = [
             'comment_uid' => $commentUid
         ];
@@ -1090,11 +1030,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'SELECT_COMMENT_LIKE_BY_IDS';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
         $params = [
             'comment_id' => (int) $commentId,
             'user_id'    => (int) $userId,
@@ -1141,11 +1077,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'UPDATE_COMMENT_TO_LIKE';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $userId = $this->userIdResolver($updatedBy, $optionalParams);
 
@@ -1181,11 +1113,7 @@ class MessageBoardService {
         // SQL 文とパラメーターを準備
         $sqlKey = 'UPDATE_COMMENT_TO_UNLIKE';
         $sql = constant('MessageBoardQueries::'.$sqlKey);
-        CakeLog::write(
-            'info',
-            '--- '.__CLASS__.'#'.__FUNCTION__.' ---'."\n".
-            'Executing query identified by the key '.$sqlKey.'. See "app/Config/Sql/*.php" to check raw queries.'
-        );
+        Logger::sqlKey($sqlKey, __CLASS__, __FUNCTION__);
 
         $userId = $this->userIdResolver($updatedBy, $optionalParams);
 
